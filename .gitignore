@@ -1,0 +1,8 @@
+# Ignore large raw/parquet/db files and virtualenv when pushing to GitHub
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+data/raw/*.json
+data/parquet/
+data/db/*.db
