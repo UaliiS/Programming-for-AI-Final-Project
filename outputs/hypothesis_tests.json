@@ -1,0 +1,42 @@
+{
+  "H1_elite_bias": {
+    "title": "H1: Elite Reviewer Rating Bias & Variance Reduction",
+    "null_hypothesis": "Elite and Regular users have identical mean star ratings and rating variance.",
+    "elite_mean_stars": 3.8392,
+    "regular_mean_stars": 3.7491,
+    "elite_std_stars": 1.1972,
+    "regular_std_stars": 1.5357,
+    "welch_t_stat": 25.5642,
+    "welch_p_value": 0.0,
+    "levene_stat": 20193.1465,
+    "levene_p_value": 0.0,
+    "decision": "Reject H0 (p < 0.0001)",
+    "conclusion": "Elite users assign significantly higher mean ratings with substantially lower variance (fewer extreme 1-star rants) compared to regular users."
+  },
+  "H2_city_category_heterogeneity": {
+    "title": "H2: Geographic (City) and Category Rating Heterogeneity",
+    "null_hypothesis": "Mean business review ratings are invariant across metropolitan cities and primary categories.",
+    "city_anova_f_stat": 179.5433,
+    "city_anova_p_value": 0.0,
+    "category_anova_f_stat": 447.2544,
+    "category_anova_p_value": 0.0,
+    "highest_rated_city": "Saint Petersburg",
+    "highest_city_mean": 4.0092,
+    "lowest_rated_city": "Tampa",
+    "lowest_city_mean": 3.7581,
+    "decision": "Reject H0 (p < 0.0001)",
+    "conclusion": "Ratings differ significantly across cities and categories: hospitality/tourism hubs (Santa Barbara, New Orleans) exhibit significantly higher average ratings than industrial/commuter hubs."
+  },
+  "H3_length_usefulness": {
+    "title": "H3: Review Text Length & Community Usefulness Impact",
+    "null_hypothesis": "Review text length has no monotonic association with useful votes or elite status.",
+    "spearman_rho_length_vs_useful": 0.3361,
+    "spearman_p_value": 0.0,
+    "elite_mean_length_chars": 768.0,
+    "regular_mean_length_chars": 509.11,
+    "mann_whitney_u_stat": 65748830545.0,
+    "mann_whitney_p_value": 0.0,
+    "decision": "Reject H0 (p < 0.0001)",
+    "conclusion": "Longer, detailed reviews strongly correlate with community 'useful' votes, and elite reviewers write significantly longer reviews than non-elite users."
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "split_strategy": "Chronological Split (Train: 2005-2019, Test: 2020-2022) - Zero Temporal Leakage",
+  "train_samples": 120000,
+  "test_samples": 30000,
+  "best_model": "Model 3: TF-IDF (1-2 ngrams) + LogisticRegression",
+  "models_comparison": [
+    {
+      "model_name": "Baseline: DummyClassifier (Majority Class)",
+      "accuracy": 0.5378,
+      "f1_macro": 0.1399,
+      "f1_weighted": 0.3761,
+      "mae_stars": 1.2432,
+      "rmse_stars": 2.026,
+      "train_time_seconds": 4.681,
+      "inference_ms_per_1k_reviews": 33.678,
+      "model_size_mb": 0.018
+    },
+    {
+      "model_name": "Model 1: TF-IDF (1-2 ngrams) + MultinomialNB",
+      "accuracy": 0.7198,
+      "f1_macro": 0.5043,
+      "f1_weighted": 0.6991,
+      "mae_stars": 0.4357,
+      "rmse_stars": 0.9676,
+      "train_time_seconds": 13.075,
+      "inference_ms_per_1k_reviews": 49.545,
+      "model_size_mb": 1.702
+    },
+    {
+      "model_name": "Model 2: TF-IDF (1-2 ngrams) + SGD Linear Hinged/LogLoss",
+      "accuracy": 0.7465,
+      "f1_macro": 0.5444,
+      "f1_weighted": 0.7265,
+      "mae_stars": 0.3658,
+      "rmse_stars": 0.8449,
+      "train_time_seconds": 14.001,
+      "inference_ms_per_1k_reviews": 44.454,
+      "model_size_mb": 1.513
+    },
+    {
+      "model_name": "Model 3: TF-IDF (1-2 ngrams) + LogisticRegression",
+      "accuracy": 0.7381,
+      "f1_macro": 0.5582,
+      "f1_weighted": 0.7295,
+      "mae_stars": 0.3586,
+      "rmse_stars": 0.8103,
+      "train_time_seconds": 26.88,
+      "inference_ms_per_1k_reviews": 40.828,
+      "model_size_mb": 1.897
+    }
+  ],
+  "confusion_matrix": [
+    [
+      5035,
+      395,
+      103,
+      74,
+      261
+    ],
+    [
+      826,
+      483,
+      308,
+      126,
+      145
+    ],
+    [
+      330,
+      327,
+      655,
+      469,
+      269
+    ],
+    [
+      90,
+      68,
+      378,
+      1802,
+      1723
+    ],
+    [
+      150,
+      27,
+      99,
+      1690,
+      14167
+    ]
+  ],
+  "confusion_matrix_plot": "outputs/plots/fig6_confusion_matrix.png",
+  "error_analysis_samples": [
+    {
+      "review_id": "kLpwwGyCPDhsnwuBAze0VQ",
+      "true_stars": 5,
+      "predicted_stars": 3,
+      "text_snippet": "I'm from New Jersey, and Florida isn't known for good pizza, so I wasn't expecting much, just a place to get a pizza close to home, but was really surprised! Cr..."
+    },
+    {
+      "review_id": "Q-SNTYdDreZZMs9M9sheWg",
+      "true_stars": 3,
+      "predicted_stars": 5,
+      "text_snippet": "2018: No long do I use or recommend the Repair shop.  Because of the last work on my Jeep Grand Cherokee heater core replacement.  Had to return 2 times to have..."
+    },
+    {
+      "review_id": "kahSgKWZwIbAdjs_VEIXYg",
+      "true_stars": 3,
+      "predicted_stars": 4,
+      "text_snippet": "Having problems lately when ordering pizzas from this place. Now with the corona virus, they seem to get my phone order wrong. I used to get my pizza request pe..."
+    },
+    {
+      "review_id": "qqPo6XEcjAZjQB9fXJab8g",
+      "true_stars": 1,
+      "predicted_stars": 2,
+      "text_snippet": "I was really looking forward to this bagel shop but it was very disappointing. The bagel itself was actually pretty good and I should have just gotten that; but..."
+    },
+    {
+      "review_id": "0K0QkMrQUD8JDBYfhh64Tw",
+      "true_stars": 5,
+      "predicted_stars": 4,
+      "text_snippet": "I can't believe I've never reviewed Village Whiskey!  I have been a big fan for a long time and consistently maintain that VW serves the best burgers and fries ..."
+    },
+    {
+      "review_id": "5qwvGPTBKo2IIXhPsZjzPw",
+      "true_stars": 1,
+      "predicted_stars": 5,
+      "text_snippet": "To walk into a place, make eye contact with people who work there and not even get a smile? I must be butt ugly. (Although I know I'm not) Wish I knew your food..."
+    },
+    {
+      "review_id": "NOSIKibJDOKjr8tbFvOwjQ",
+      "true_stars": 5,
+      "predicted_stars": 4,
+      "text_snippet": "So happy we tried this place! Service was wonderful. Food was even better. We ordered the garlic knots. They were hot, salty and delicious. The accompanying mar..."
+    },
+    {
+      "review_id": "Wny2PvQmTlZv4qdqZW9I8A",
+      "true_stars": 2,
+      "predicted_stars": 3,
+      "text_snippet": "Came here for brunch with a group of about 15. We were told they couldn't seat us outside because our party was too large and essentially we'd take the entire o..."
+    },
+    {
+      "review_id": "mSaKtx2BywTDJY-rxgegbw",
+      "true_stars": 2,
+      "predicted_stars": 4,
+      "text_snippet": "Went there for a date with my loving fiance and would what could of been a great birthday. Instead was a nightmare dealing with there staff. The host was deffin..."
+    },
+    {
+      "review_id": "nphGXW6XzwrVoEq_m_fEyw",
+      "true_stars": 4,
+      "predicted_stars": 5,
+      "text_snippet": "I have moved the South and no longer live on 2nd Street, thanks for the update and for acknowledging my concerns about the neighborhood, my husband passed a cou..."
+    }
+  ]
+}

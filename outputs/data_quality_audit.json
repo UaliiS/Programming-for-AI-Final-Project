@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-11-16T19:31:44.259545",
+  "dataset_source": "Official Yelp Open Dataset (https://business.yelp.com/data/resources/open-dataset/)",
+  "etl_elapsed_seconds": 20.4,
+  "reviews_audit": {
+    "raw_total_rows": 750000,
+    "duplicate_review_ids": 0,
+    "duplicate_spam_texts": 1273,
+    "ultra_short_or_empty_texts_dropped": 13,
+    "invalid_star_rows": 0,
+    "extreme_useful_outliers_capped": 55,
+    "cleaned_total_rows": 748714
+  },
+  "cleaning_rules_justification": {
+    "duplicate_spam_texts": "1,273 exact duplicate review texts represent copy-pasted user spam across multiple locations and cause train/test leakage; dropped.",
+    "ultra_short_or_empty_texts_dropped": "Reviews shorter than 10 characters (e.g. 'ok', 'good', '.') lack lexical signal for TF-IDF modeling; dropped.",
+    "business_missing_categories_imputed": "103 businesses in official Yelp dataset have null categories; imputed as 'Uncategorized' to preserve foreign key joins.",
+    "business_city_normalization": "Standardized inconsistent city naming variants (e.g., 'St. Louis' vs 'Saint Louis', trailing whitespace).",
+    "extreme_useful_outliers_capped": "Viral reviews with >100 useful votes (up to 539) skew linear mean aggregations; winsorized at 100."
+  },
+  "reviews_memory_optimization": {
+    "raw_in_memory_mb": 65.8,
+    "optimized_in_memory_mb": 37.31,
+    "memory_reduction_percent": 43.3,
+    "raw_jsonl_disk_mb": 547.06,
+    "cleaned_parquet_disk_mb": 303.39,
+    "disk_compression_ratio": 1.8
+  },
+  "entities_summary": {
+    "business_raw_rows": 150346,
+    "business_cleaned_rows": 150346,
+    "business_missing_categories_imputed": 103,
+    "business_missing_attributes_audited": 13744,
+    "business_missing_hours_audited": 23223,
+    "business_missing_postal_codes": 73,
+    "business_memory": {
+      "memory_before_mb": 35.922,
+      "memory_after_mb": 24.759,
+      "reduction_percent": 31.08
+    },
+    "user_rows": 444680,
+    "user_elite_count": 16969,
+    "user_memory": {
+      "memory_before_mb": 57.558,
+      "memory_after_mb": 39.864,
+      "reduction_percent": 30.74
+    }
+  }
+}
