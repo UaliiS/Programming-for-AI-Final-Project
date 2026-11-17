@@ -1,4 +1,4 @@
-1#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Interactive Console Menu & CLI Entrypoint for Yelp Reviews at Scale Project (Topic #44).
 Demonstrates all mandatory Technical Requirements (1–11):
