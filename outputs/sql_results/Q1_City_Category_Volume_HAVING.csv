@@ -1,0 +1,16 @@
+city,state,category_name,total_reviews,unique_businesses,avg_review_stars,avg_useful_votes
+Philadelphia,PA,Restaurants,76549,5191,3.807,1.11
+New Orleans,LA,Restaurants,52910,2058,3.95,0.92
+Nashville,TN,Restaurants,36042,2249,3.859,0.75
+Tampa,FL,Restaurants,33601,2650,3.831,1.06
+Philadelphia,PA,Food,30425,2679,3.906,1.18
+Indianapolis,IN,Restaurants,27813,2528,3.862,0.96
+Tucson,AZ,Restaurants,27636,2237,3.741,1.06
+Saint Louis,MO,Restaurants,27177,2232,3.845,1.04
+Philadelphia,PA,Nightlife,26264,1299,3.754,1.16
+Philadelphia,PA,Bars,24871,1172,3.756,1.12
+Reno,NV,Restaurants,22440,1193,3.779,1.38
+New Orleans,LA,Nightlife,19371,866,3.93,1.09
+New Orleans,LA,Bars,18138,765,3.933,1.08
+Santa Barbara,CA,Restaurants,18070,709,3.977,0.92
+New Orleans,LA,Food,18017,1092,4.009,1.1

@@ -29,6 +29,7 @@ from src.config import (
     PARQUET_BUSINESS,
     PARQUET_REVIEWS_SINGLE,
     PARQUET_USER,
+    ER_DIAGRAM_PNG,
     PROJECT_METADATA,
     SQLITE_DB_PATH,
 )
@@ -50,7 +51,7 @@ def load_json_artifact(path_str: str) -> dict:
 
 @st.cache_data
 def load_filtered_aggregates(year_min: int, year_max: int, selected_cities: list, selected_cats: list, elite_filter: str):
-    """Use Polars LazyFrame to filter 550K+ reviews rapidly with predicate pushdown."""
+    """Filter the cleaned reviews with a Polars LazyFrame (predicate + projection pushdown)."""
     lf_rev = pl.scan_parquet(PARQUET_REVIEWS_SINGLE).filter(
         (pl.col("year") >= year_min) & (pl.col("year") <= year_max)
     )
@@ -126,10 +127,12 @@ def main():
 
     # Sidebar Filters
     st.sidebar.header("🔍 Interactive Filters")
-    year_range = st.sidebar.slider("Select Review Year Range", min_value=2005, max_value=2022, value=(2010, 2022))
+    years = pl.scan_parquet(PARQUET_REVIEWS_SINGLE).select(pl.col("year").min().alias("lo"), pl.col("year").max().alias("hi")).collect().row(0)
+    y_lo, y_hi = int(years[0]), int(years[1])
+    year_range = st.sidebar.slider("Select Review Year Range", min_value=y_lo, max_value=y_hi, value=(max(y_lo, 2010), y_hi))
     selected_cities = st.sidebar.multiselect("Filter by City (Top 20)", options=top_cities, default=top_cities[:10])
     selected_cats = st.sidebar.multiselect("Filter by Primary Category", options=top_cats, default=top_cats[:10])
-    elite_filter = st.sidebar.radio("User Tier Filter", options=["All Users", "Elite Only", "Regular Only"], index=0)
+    elite_filter = st.sidebar.radio("User Tier Filter", options=["All Users", "Elite Only", "Regular Only"], help="Elite = user had Yelp Elite status in at least one year", index=0)
 
     kpi_df, by_city_cat, by_year_tier, star_dist = load_filtered_aggregates(
         year_range[0], year_range[1], selected_cities, selected_cats, elite_filter
@@ -163,7 +166,7 @@ def main():
         if total_rev > 0:
             col_a, col_b = st.columns(2)
             with col_a:
-                star_dist["User Tier"] = star_dist["is_elite"].map({1: "Elite Reviewers", 0: "Regular Users"})
+                star_dist["User Tier"] = star_dist["is_elite"].map({1: "Ever-Elite users", 0: "Never-Elite users"})
                 fig_bar = px.bar(
                     star_dist,
                     x="stars",
@@ -172,10 +175,10 @@ def main():
                     barmode="group",
                     title="Star Rating Distribution by Reviewer Tier",
                 )
-                st.plotly_chart(fig_bar, use_container_width=True)
+                st.plotly_chart(fig_bar, width="stretch")
 
             with col_b:
-                by_year_tier["User Tier"] = by_year_tier["is_elite"].map({1: "Elite Reviewers", 0: "Regular Users"})
+                by_year_tier["User Tier"] = by_year_tier["is_elite"].map({1: "Ever-Elite users", 0: "Never-Elite users"})
                 fig_line = px.line(
                     by_year_tier,
                     x="year",
@@ -184,7 +187,7 @@ def main():
                     markers=True,
                     title="Annual Review Volume Trajectory by Tier",
                 )
-                st.plotly_chart(fig_line, use_container_width=True)
+                st.plotly_chart(fig_line, width="stretch")
 
             fig_tree = px.treemap(
                 by_city_cat,
@@ -194,7 +197,7 @@ def main():
                 color_continuous_scale="RdYlGn",
                 title="Interactive Hierarchy: City -> Primary Category Volume & Mean Stars",
             )
-            st.plotly_chart(fig_tree, use_container_width=True)
+            st.plotly_chart(fig_tree, width="stretch")
 
     # TAB 2: Benchmarks & ETL Audit
     with tabs[1]:
@@ -213,24 +216,28 @@ def main():
         if BENCHMARK_RESULTS_JSON.exists():
             bench = load_json_artifact(str(BENCHMARK_RESULTS_JSON))
             df_b = pd.DataFrame(bench["benchmarks"])
-            st.dataframe(df_b, use_container_width=True)
+            st.dataframe(df_b, width="stretch")
+            st.caption(f"Identical results across engines: {bench['all_results_identical']} — {bench['method']}")
             col_b1, col_b2 = st.columns(2)
             with col_b1:
                 fig_t = px.bar(
-                    df_b, x="time_seconds", y="engine", orientation="h", color="engine",
-                    title="Wall-Clock Execution Time (Seconds)"
+                    df_b, x="time_seconds_median", y="engine", orientation="h", color="engine", log_x=True,
+                    title="Median run time (seconds, log scale)"
                 )
-                st.plotly_chart(fig_t, use_container_width=True)
+                st.plotly_chart(fig_t, width="stretch")
             with col_b2:
                 fig_m = px.bar(
-                    df_b, x="peak_memory_mb", y="engine", orientation="h", color="engine",
-                    title="Peak Traced Memory Footprint (MB)"
+                    df_b, x="peak_rss_mb", y="engine", orientation="h", color="engine",
+                    title="Peak process memory, RSS (MB)"
                 )
-                st.plotly_chart(fig_m, use_container_width=True)
+                st.plotly_chart(fig_m, width="stretch")
 
     # TAB 3: SQL Queries
     with tabs[2]:
         st.subheader("Normalized 5-Table SQLite Database & 8 Analytical SQL Queries")
+        if ER_DIAGRAM_PNG.exists():
+            with st.expander("ER diagram", expanded=False):
+                st.image(str(ER_DIAGRAM_PNG))
         selected_q = st.selectbox("Select an Analytical SQL Query to Execute Live:", list(SQL_QUERIES.keys()))
         st.code(SQL_QUERIES[selected_q], language="sql")
         if SQLITE_DB_PATH.exists():
@@ -239,7 +246,7 @@ def main():
             conn.execute("PRAGMA cache_size = -64000;")
             df_q = pd.read_sql_query(SQL_QUERIES[selected_q], conn)
             conn.close()
-            st.dataframe(df_q, use_container_width=True)
+            st.dataframe(df_q, width="stretch")
 
     # TAB 4: Hypotheses
     with tabs[3]:
@@ -247,7 +254,7 @@ def main():
         if HYPOTHESIS_RESULTS_JSON.exists():
             hyps = load_json_artifact(str(HYPOTHESIS_RESULTS_JSON))
             for k, val in hyps.items():
-                with st.expander(f"📌 {val['title']} — {val['decision']}", expanded=True):
+                with st.expander(f"{val['title']} — {val['decision']}", expanded=True):
                     st.write(f"**Null Hypothesis ($H_0$):** {val['null_hypothesis']}")
                     st.write(f"**Empirical Conclusion:** {val['conclusion']}")
                     st.json(val)
@@ -258,7 +265,8 @@ def main():
         if MODEL_METRICS_JSON.exists():
             ml_data = load_json_artifact(str(MODEL_METRICS_JSON))
             st.markdown(f"**Split Strategy:** `{ml_data['split_strategy']}` | **Best Model:** `{ml_data['best_model']}`")
-            st.dataframe(pd.DataFrame(ml_data["models_comparison"]), use_container_width=True)
+            st.markdown(f"**Model selection:** {ml_data['selection_rule']}")
+            st.dataframe(pd.json_normalize(ml_data["models_comparison"]), width="stretch")
 
         st.markdown("---")
         st.subheader("🎯 Live Interactive Review Star-Rating Predictor")

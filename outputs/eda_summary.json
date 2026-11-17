@@ -1,0 +1,205 @@
+{
+  "rows": 776476,
+  "businesses": 118584,
+  "users": 462184,
+  "cities": 1097,
+  "states": 26,
+  "years": [
+    2005,
+    2022
+  ],
+  "feature_types": {
+    "numeric": [
+      "stars",
+      "useful",
+      "funny",
+      "cool",
+      "text_length",
+      "user_review_count",
+      "fans",
+      "price_range"
+    ],
+    "categorical": [
+      "city",
+      "state",
+      "primary_category",
+      "tier",
+      "is_open"
+    ],
+    "temporal": [
+      "year",
+      "month"
+    ],
+    "text": [
+      "text (Parquet only)"
+    ]
+  },
+  "describe": {
+    "stars": {
+      "count": 776476.0,
+      "mean": 3.75,
+      "std": 1.478,
+      "min": 1.0,
+      "25%": 3.0,
+      "50%": 4.0,
+      "75%": 5.0,
+      "99%": 5.0,
+      "max": 5.0
+    },
+    "useful": {
+      "count": 776476.0,
+      "mean": 1.183,
+      "std": 2.847,
+      "min": 0.0,
+      "25%": 0.0,
+      "50%": 0.0,
+      "75%": 1.0,
+      "99%": 11.0,
+      "max": 100.0
+    },
+    "funny": {
+      "count": 776476.0,
+      "mean": 0.327,
+      "std": 1.493,
+      "min": 0.0,
+      "25%": 0.0,
+      "50%": 0.0,
+      "75%": 0.0,
+      "99%": 5.0,
+      "max": 100.0
+    },
+    "cool": {
+      "count": 776476.0,
+      "mean": 0.498,
+      "std": 2.003,
+      "min": 0.0,
+      "25%": 0.0,
+      "50%": 0.0,
+      "75%": 0.0,
+      "99%": 7.0,
+      "max": 100.0
+    },
+    "text_length": {
+      "count": 776476.0,
+      "mean": 567.468,
+      "std": 526.017,
+      "min": 10.0,
+      "25%": 229.0,
+      "50%": 406.0,
+      "75%": 720.0,
+      "99%": 2634.0,
+      "max": 5000.0
+    },
+    "user_review_count": {
+      "count": 776476.0,
+      "mean": 124.77,
+      "std": 368.866,
+      "min": 0.0,
+      "25%": 7.0,
+      "50%": 24.0,
+      "75%": 98.0,
+      "99%": 1525.0,
+      "max": 17473.0
+    },
+    "fans": {
+      "count": 776476.0,
+      "mean": 13.278,
+      "std": 86.001,
+      "min": 0.0,
+      "25%": 0.0,
+      "50%": 0.0,
+      "75%": 4.0,
+      "99%": 222.0,
+      "max": 12497.0
+    }
+  },
+  "star_distribution_percent": {
+    "1": 15.27,
+    "2": 7.77,
+    "3": 9.91,
+    "4": 20.77,
+    "5": 46.27
+  },
+  "top_cities_by_reviews": {
+    "Philadelphia": 107996,
+    "New Orleans": 70579,
+    "Tampa": 50395,
+    "Nashville": 50178,
+    "Tucson": 45008,
+    "Indianapolis": 40326,
+    "Reno": 39181,
+    "Saint Louis": 38038,
+    "Santa Barbara": 29991,
+    "Saint Petersburg": 17580
+  },
+  "tier_counts": {
+    "Never Elite": 584187,
+    "Elite (review in elite year)": 150891,
+    "Elite user, other year": 41398
+  },
+  "spearman_correlation": {
+    "stars": {
+      "stars": 1.0,
+      "useful": -0.119,
+      "funny": -0.118,
+      "cool": 0.107,
+      "text_length": -0.218,
+      "user_review_count": 0.016,
+      "fans": 0.01
+    },
+    "useful": {
+      "stars": -0.119,
+      "useful": 1.0,
+      "funny": 0.411,
+      "cool": 0.512,
+      "text_length": 0.34,
+      "user_review_count": 0.283,
+      "fans": 0.343
+    },
+    "funny": {
+      "stars": -0.118,
+      "useful": 0.411,
+      "funny": 1.0,
+      "cool": 0.424,
+      "text_length": 0.218,
+      "user_review_count": 0.225,
+      "fans": 0.271
+    },
+    "cool": {
+      "stars": 0.107,
+      "useful": 0.512,
+      "funny": 0.424,
+      "cool": 1.0,
+      "text_length": 0.223,
+      "user_review_count": 0.343,
+      "fans": 0.4
+    },
+    "text_length": {
+      "stars": -0.218,
+      "useful": 0.34,
+      "funny": 0.218,
+      "cool": 0.223,
+      "text_length": 1.0,
+      "user_review_count": 0.226,
+      "fans": 0.276
+    },
+    "user_review_count": {
+      "stars": 0.016,
+      "useful": 0.283,
+      "funny": 0.225,
+      "cool": 0.343,
+      "text_length": 0.226,
+      "user_review_count": 1.0,
+      "fans": 0.804
+    },
+    "fans": {
+      "stars": 0.01,
+      "useful": 0.343,
+      "funny": 0.271,
+      "cool": 0.4,
+      "text_length": 0.276,
+      "user_review_count": 0.804,
+      "fans": 1.0
+    }
+  }
+}

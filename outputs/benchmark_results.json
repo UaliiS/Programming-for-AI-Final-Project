@@ -1,157 +1,263 @@
 {
+  "task": "per-year count/mean stars/mean useful + reviews\u22c8businesses per-city count/mean stars",
+  "method": "each engine in a fresh spawned process; time = median of runs; memory = peak RSS sampled every 5 ms (psutil); task memory = peak minus RSS after imports",
+  "machine": {
+    "python": "3.12.1",
+    "platform": "macOS-26.2-arm64-arm-64bit",
+    "cpu_count": 8
+  },
   "benchmarks": [
     {
-      "engine": "Baseline: JSONL Chunked (Pandas)",
-      "time_seconds": 68.5589,
-      "peak_memory_mb": 405.53,
-      "total_rows_processed": 748714,
-      "global_mean_stars": 3.769781
+      "engine": "Baseline: JSONL chunked + Pandas",
+      "runs": 1,
+      "time_seconds_median": 24.332,
+      "time_seconds_min": 24.332,
+      "peak_rss_mb": 940.4,
+      "task_memory_mb": 698.8,
+      "total_rows": 776476,
+      "top_city": "Philadelphia",
+      "speedup_vs_baseline": 1.0
     },
     {
-      "engine": "Pandas (Parquet Eager)",
-      "time_seconds": 1.8388,
-      "peak_memory_mb": 85.12,
-      "total_rows_processed": 748714,
-      "global_mean_stars": 3.769781,
-      "top_city": "Philadelphia"
+      "engine": "Approach 1: Pandas (Parquet, eager)",
+      "runs": 3,
+      "time_seconds_median": 0.141,
+      "time_seconds_min": 0.14,
+      "peak_rss_mb": 456.9,
+      "task_memory_mb": 215.5,
+      "total_rows": 776476,
+      "top_city": "Philadelphia",
+      "speedup_vs_baseline": 172.6
     },
     {
-      "engine": "Dask (Lazy Task Graph on Parquet)",
-      "time_seconds": 2.6828,
-      "peak_memory_mb": 85.76,
-      "total_rows_processed": 748714,
-      "global_mean_stars": 3.769781,
-      "top_city": "Philadelphia"
+      "engine": "Approach 2: Dask (partitioned Parquet, lazy)",
+      "runs": 3,
+      "time_seconds_median": 0.793,
+      "time_seconds_min": 0.784,
+      "peak_rss_mb": 626.8,
+      "task_memory_mb": 359.9,
+      "total_rows": 776476,
+      "top_city": "Philadelphia",
+      "speedup_vs_baseline": 30.7
     },
     {
-      "engine": "Polars LazyFrame (scan_parquet)",
-      "time_seconds": 0.1895,
-      "peak_memory_mb": 0.13,
-      "total_rows_processed": 748714,
-      "global_mean_stars": 3.769781,
-      "top_city": "Philadelphia"
+      "engine": "Approach 3: Polars LazyFrame (scan_parquet)",
+      "runs": 3,
+      "time_seconds_median": 0.025,
+      "time_seconds_min": 0.024,
+      "peak_rss_mb": 355.7,
+      "task_memory_mb": 112.1,
+      "total_rows": 776476,
+      "top_city": "Philadelphia",
+      "speedup_vs_baseline": 973.3
     }
   ],
-  "consistency_check": {
-    "global_mean_stars_per_engine": {
-      "Baseline: JSONL Chunked (Pandas)": 3.769781,
-      "Pandas (Parquet Eager)": 3.769781,
-      "Dask (Lazy Task Graph on Parquet)": 3.769781,
-      "Polars LazyFrame (scan_parquet)": 3.769781
+  "result_agreement_vs_pandas": {
+    "Baseline: JSONL chunked + Pandas": {
+      "yearly_table_identical": true,
+      "top50_city_table_identical": true
     },
-    "max_absolute_difference": 0.0,
-    "exact_equivalence_verified": true
+    "Approach 1: Pandas (Parquet, eager)": {
+      "yearly_table_identical": true,
+      "top50_city_table_identical": true
+    },
+    "Approach 2: Dask (partitioned Parquet, lazy)": {
+      "yearly_table_identical": true,
+      "top50_city_table_identical": true
+    },
+    "Approach 3: Polars LazyFrame (scan_parquet)": {
+      "yearly_table_identical": true,
+      "top50_city_table_identical": true
+    }
   },
-  "speedup_polars_vs_jsonl_baseline": 361.79,
-  "speedup_polars_vs_pandas_parquet": 9.7,
+  "all_results_identical": true,
+  "fastest_engine": "Approach 3: Polars LazyFrame (scan_parquet)",
+  "lowest_memory_engine": "Approach 3: Polars LazyFrame (scan_parquet)",
   "yearly_aggregates": [
     {
       "year": 2005,
-      "review_count": 139,
-      "mean_stars": 3.7913670539855957,
-      "mean_useful": 1.129496
+      "review_count": 110,
+      "mean_stars": 3.8636363636363638,
+      "mean_useful": 1.0818181818181818
     },
     {
       "year": 2006,
-      "review_count": 396,
-      "mean_stars": 3.9570701122283936,
-      "mean_useful": 1.502525
+      "review_count": 433,
+      "mean_stars": 3.933025404157044,
+      "mean_useful": 1.8290993071593533
     },
     {
       "year": 2007,
-      "review_count": 1589,
-      "mean_stars": 3.7942099571228027,
-      "mean_useful": 1.852108
+      "review_count": 1732,
+      "mean_stars": 3.868360277136259,
+      "mean_useful": 1.8931870669745958
     },
     {
       "year": 2008,
-      "review_count": 5211,
-      "mean_stars": 3.809825897216797,
-      "mean_useful": 2.394166
+      "review_count": 5367,
+      "mean_stars": 3.7883361281907955,
+      "mean_useful": 2.4110303707844234
     },
     {
       "year": 2009,
-      "review_count": 8226,
-      "mean_stars": 3.734744071960449,
-      "mean_useful": 2.064673
+      "review_count": 8167,
+      "mean_stars": 3.723276600955063,
+      "mean_useful": 2.032325211215869
     },
     {
       "year": 2010,
-      "review_count": 15630,
-      "mean_stars": 3.738708019256592,
-      "mean_useful": 1.840627
+      "review_count": 15668,
+      "mean_stars": 3.718917538932857,
+      "mean_useful": 1.8480980342098545
     },
     {
       "year": 2011,
-      "review_count": 25794,
-      "mean_stars": 3.738621950149536,
-      "mean_useful": 1.62499
+      "review_count": 25888,
+      "mean_stars": 3.7148485784919654,
+      "mean_useful": 1.6912855377008653
     },
     {
       "year": 2012,
-      "review_count": 32098,
-      "mean_stars": 3.7392361164093018,
-      "mean_useful": 1.570129
+      "review_count": 31874,
+      "mean_stars": 3.6747819539436533,
+      "mean_useful": 1.6455104473865847
     },
     {
       "year": 2013,
-      "review_count": 42314,
-      "mean_stars": 3.7223379611968994,
-      "mean_useful": 1.541996
+      "review_count": 42425,
+      "mean_stars": 3.674649381261049,
+      "mean_useful": 1.582086034177961
     },
     {
       "year": 2014,
-      "review_count": 57496,
-      "mean_stars": 3.7363638877868652,
-      "mean_useful": 1.418847
+      "review_count": 58267,
+      "mean_stars": 3.723050783462337,
+      "mean_useful": 1.4445226285890813
     },
     {
       "year": 2015,
-      "review_count": 75788,
-      "mean_stars": 3.75473690032959,
-      "mean_useful": 1.259236
+      "review_count": 76306,
+      "mean_stars": 3.7419075826278405,
+      "mean_useful": 1.2889812072445155
     },
     {
       "year": 2016,
-      "review_count": 82739,
-      "mean_stars": 3.788672924041748,
-      "mean_useful": 1.156009
+      "review_count": 84108,
+      "mean_stars": 3.7655395443953013,
+      "mean_useful": 1.1582964759594807
     },
     {
       "year": 2017,
-      "review_count": 88410,
-      "mean_stars": 3.797714948654175,
-      "mean_useful": 0.976439
+      "review_count": 91268,
+      "mean_stars": 3.783220844107464,
+      "mean_useful": 1.0364640399701976
     },
     {
       "year": 2018,
-      "review_count": 96602,
-      "mean_stars": 3.80430006980896,
-      "mean_useful": 0.970477
+      "review_count": 100414,
+      "mean_stars": 3.7829784691377695,
+      "mean_useful": 1.0025494452964725
     },
     {
       "year": 2019,
-      "review_count": 93065,
-      "mean_stars": 3.781775951385498,
-      "mean_useful": 0.947413
+      "review_count": 100606,
+      "mean_stars": 3.7758483589447946,
+      "mean_useful": 0.949168041667495
     },
     {
       "year": 2020,
-      "review_count": 55873,
-      "mean_stars": 3.7931740283966064,
-      "mean_useful": 1.00698
+      "review_count": 61767,
+      "mean_stars": 3.7747340813055517,
+      "mean_useful": 0.9880518723590267
     },
     {
       "year": 2021,
-      "review_count": 64102,
-      "mean_stars": 3.7323639392852783,
-      "mean_useful": 0.856635
+      "review_count": 68543,
+      "mean_stars": 3.7109843455932774,
+      "mean_useful": 0.8497147775848737
     },
     {
       "year": 2022,
-      "review_count": 3242,
-      "mean_stars": 3.7421340942382812,
-      "mean_useful": 0.635719
+      "review_count": 3533,
+      "mean_stars": 3.710161335975092,
+      "mean_useful": 0.6436456269459383
+    }
+  ],
+  "top_cities": [
+    {
+      "city": "Philadelphia",
+      "review_count": 107996,
+      "mean_stars": 3.779093670135931
+    },
+    {
+      "city": "New Orleans",
+      "review_count": 70579,
+      "mean_stars": 3.9535697587100977
+    },
+    {
+      "city": "Tampa",
+      "review_count": 50395,
+      "mean_stars": 3.7456890564540135
+    },
+    {
+      "city": "Nashville",
+      "review_count": 50178,
+      "mean_stars": 3.816991510223604
+    },
+    {
+      "city": "Tucson",
+      "review_count": 45008,
+      "mean_stars": 3.7089628510487023
+    },
+    {
+      "city": "Indianapolis",
+      "review_count": 40326,
+      "mean_stars": 3.82584436839756
+    },
+    {
+      "city": "Reno",
+      "review_count": 39181,
+      "mean_stars": 3.7524310252418265
+    },
+    {
+      "city": "Saint Louis",
+      "review_count": 38038,
+      "mean_stars": 3.806561859193438
+    },
+    {
+      "city": "Santa Barbara",
+      "review_count": 29991,
+      "mean_stars": 4.005201560468141
+    },
+    {
+      "city": "Saint Petersburg",
+      "review_count": 17580,
+      "mean_stars": 3.863708759954494
+    },
+    {
+      "city": "Boise",
+      "review_count": 11709,
+      "mean_stars": 3.7925527372106926
+    },
+    {
+      "city": "Edmonton",
+      "review_count": 11302,
+      "mean_stars": 3.569456733321536
+    },
+    {
+      "city": "Clearwater",
+      "review_count": 9715,
+      "mean_stars": 3.7829130211013897
+    },
+    {
+      "city": "Sparks",
+      "review_count": 8231,
+      "mean_stars": 3.5989551694812296
+    },
+    {
+      "city": "Metairie",
+      "review_count": 7221,
+      "mean_stars": 3.602963578451738
     }
   ]
 }

@@ -1,0 +1,21 @@
+city,name,primary_category,rev_count,biz_stars,city_avg_stars,stars_above_city_avg,city_rank
+Boise,Chandlers,Restaurants,63,4.381,3.986,0.395,1
+Boise,Tin Roof Tacos,Restaurants,73,4.342,3.986,0.357,2
+Indianapolis,Coat Check Coffee,Food,53,4.774,4.076,0.697,1
+Indianapolis,Chapati,Restaurants,78,4.692,4.076,0.616,2
+Nashville,Nelson's Green Brier Distillery,Food,54,4.926,3.989,0.937,1
+Nashville,Jeni's Splendid Ice Creams,Food,81,4.716,3.989,0.727,2
+New Orleans,Heard Dat Kitchen,Restaurants,67,4.896,4.012,0.884,1
+New Orleans,Free Tours By Foot,Hotels & Travel,77,4.883,4.012,0.871,2
+Philadelphia,South Philly Barbacoa,Restaurants,80,4.813,3.924,0.889,1
+Philadelphia,SUGARED + BRONZED,Shopping,61,4.77,3.924,0.847,2
+Reno,Smiling With Hope Pizza,Restaurants,68,4.809,3.868,0.941,1
+Reno,Arario Midtown,Restaurants,80,4.737,3.868,0.87,2
+Saint Louis,Missouri Botanical Garden,Food,52,4.808,4.058,0.75,1
+Saint Louis,Blues City Deli,Restaurants,125,4.784,4.058,0.726,2
+Santa Barbara,Mony's Mexican Food,Restaurants,90,4.656,4.066,0.59,1
+Santa Barbara,Corazon Cocina,Restaurants,87,4.655,4.066,0.589,2
+Tampa,Yah Mon,Restaurants,81,4.679,4.001,0.678,1
+Tampa,Oak and Ola,Restaurants,51,4.627,4.001,0.627,2
+Tucson,Tumerico,Restaurants,81,4.938,3.947,0.991,1
+Tucson,Tito & Pep,Restaurants,52,4.712,3.947,0.764,2

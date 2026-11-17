@@ -1,49 +1,127 @@
 {
-  "timestamp": "2026-11-16T19:31:44.259545",
+  "timestamp": "2026-11-17T15:32:18",
   "dataset_source": "Official Yelp Open Dataset (https://business.yelp.com/data/resources/open-dataset/)",
-  "etl_elapsed_seconds": 20.4,
+  "sampling": "systematic: every 9th line of review.json (cap 800,000)",
+  "etl_elapsed_seconds": 37.01,
+  "chunk_size": 100000,
   "reviews_audit": {
-    "raw_total_rows": 750000,
-    "duplicate_review_ids": 0,
-    "duplicate_spam_texts": 1273,
-    "ultra_short_or_empty_texts_dropped": 13,
-    "invalid_star_rows": 0,
-    "extreme_useful_outliers_capped": 55,
-    "cleaned_total_rows": 748714
+    "raw_rows": 776698,
+    "missing_values": {},
+    "duplicate_review_id": 0,
+    "duplicate_text": 198,
+    "short_or_empty_text": 19,
+    "invalid_stars": 0,
+    "invalid_or_out_of_range_date": 0,
+    "orphan_business_id": 0,
+    "orphan_user_id": 5,
+    "negative_votes": 0,
+    "votes_above_cap": 76,
+    "max_useful_before_cap": 997,
+    "cleaned_rows": 776476
+  },
+  "reviews_removed_total": 222,
+  "reviews_removed_percent": 0.029,
+  "iqr_outliers": {
+    "text_length": {
+      "q1": 229.0,
+      "q3": 720.0,
+      "iqr_upper_fence": 1456.5,
+      "p99_9": 4630.0,
+      "rows_above_fence": 46701,
+      "share_above_fence_percent": 6.01
+    },
+    "useful": {
+      "q1": 0.0,
+      "q3": 1.0,
+      "iqr_upper_fence": 2.5,
+      "p99_9": 32.0,
+      "rows_above_fence": 102728,
+      "share_above_fence_percent": 13.23
+    }
+  },
+  "businesses_audit": {
+    "raw_rows": 150346,
+    "missing_values": {
+      "attributes": 13744,
+      "categories": 103,
+      "hours": 23223
+    },
+    "empty_postal_code": 73,
+    "duplicate_business_id": 0,
+    "invalid_coordinates": 0,
+    "invalid_business_stars": 0,
+    "negative_review_count": 0,
+    "city_spellings_before": 1416,
+    "city_spellings_after": 1215,
+    "city_rows_changed": 4801,
+    "price_range_missing": 65066,
+    "cleaned_rows": 150346,
+    "memory": {
+      "memory_before_mb": 36.94,
+      "memory_after_mb": 26.73,
+      "reduction_percent": 27.65
+    }
+  },
+  "users_audit": {
+    "raw_rows": 462196,
+    "missing_values": {},
+    "duplicate_user_id": 0,
+    "invalid_yelping_since": 0,
+    "invalid_average_stars": 0,
+    "elite_users": 44009,
+    "elite_share_percent": 9.52,
+    "elite_2020_artifact_repaired": 20509,
+    "cleaned_rows": 462196,
+    "compliment_columns": 11,
+    "memory": {
+      "memory_before_mb": 96.59,
+      "memory_after_mb": 59.12,
+      "reduction_percent": 38.79
+    }
   },
   "cleaning_rules_justification": {
-    "duplicate_spam_texts": "1,273 exact duplicate review texts represent copy-pasted user spam across multiple locations and cause train/test leakage; dropped.",
-    "ultra_short_or_empty_texts_dropped": "Reviews shorter than 10 characters (e.g. 'ok', 'good', '.') lack lexical signal for TF-IDF modeling; dropped.",
-    "business_missing_categories_imputed": "103 businesses in official Yelp dataset have null categories; imputed as 'Uncategorized' to preserve foreign key joins.",
-    "business_city_normalization": "Standardized inconsistent city naming variants (e.g., 'St. Louis' vs 'Saint Louis', trailing whitespace).",
-    "extreme_useful_outliers_capped": "Viral reviews with >100 useful votes (up to 539) skew linear mean aggregations; winsorized at 100."
+    "duplicate_review_id": "0 repeated review_id values; review_id is the primary key, so only the first occurrence is kept.",
+    "short_or_empty_text": "19 reviews with fewer than 10 characters carry no usable text for the rating model; dropped.",
+    "duplicate_text": "198 reviews repeat an earlier text exactly (copy-pasted reviews). Keeping them would put identical texts in train and test (leakage); dropped.",
+    "invalid_stars": "0 reviews had a star value outside the integers 1\u20135; dropped.",
+    "invalid_or_out_of_range_date": "0 reviews had an unparseable date or one outside 2004-10-01\u20132022-12-31; dropped.",
+    "orphan_keys": "0 reviews point to an unknown business and 5 to an unknown user; dropped so that SQL foreign keys hold.",
+    "vote_winsorisation": "76 reviews have more than 100 useful/funny/cool votes (max 997). The 99.9th percentile of useful votes is 32.0, so a cap of 100 only touches extreme viral reviews; they are kept but capped so means are not dominated by a handful of rows.",
+    "text_length_outliers": "46,701 reviews (6.01%) are above the IQR fence for length (1456 chars). Long reviews are genuine (Yelp allows 5,000 chars), so they are kept.",
+    "business_city_normalisation": "City names were trimmed, title-cased and 'St./St' unified to 'Saint': 1,416 spellings -> 1,215.",
+    "business_missing_categories": "103 businesses have no categories; labelled 'Uncategorized' so they still join.",
+    "price_range": "65,066 businesses have no RestaurantsPriceRange2 attribute; left as NULL instead of inventing a value."
   },
   "reviews_memory_optimization": {
-    "raw_in_memory_mb": 65.8,
-    "optimized_in_memory_mb": 37.31,
-    "memory_reduction_percent": 43.3,
-    "raw_jsonl_disk_mb": 547.06,
-    "cleaned_parquet_disk_mb": 303.39,
-    "disk_compression_ratio": 1.8
-  },
-  "entities_summary": {
-    "business_raw_rows": 150346,
-    "business_cleaned_rows": 150346,
-    "business_missing_categories_imputed": 103,
-    "business_missing_attributes_audited": 13744,
-    "business_missing_hours_audited": 23223,
-    "business_missing_postal_codes": 73,
-    "business_memory": {
-      "memory_before_mb": 35.922,
-      "memory_after_mb": 24.759,
-      "reduction_percent": 31.08
-    },
-    "user_rows": 444680,
-    "user_elite_count": 16969,
-    "user_memory": {
-      "memory_before_mb": 57.558,
-      "memory_after_mb": 39.864,
-      "reduction_percent": 30.74
-    }
+    "raw_chunks_in_memory_mb": 536.65,
+    "optimized_chunks_in_memory_mb": 512.35,
+    "memory_reduction_percent": 4.53,
+    "raw_without_text_mb": 110.37,
+    "optimized_without_text_mb": 86.08,
+    "reduction_without_text_percent": 22.01,
+    "note": "Review text dominates memory and cannot be downcast; the dtype gain is visible on the other columns (int64->int8/int16, date string->int16 year/int8 month, id strings->category).",
+    "raw_jsonl_disk_mb": 565.8,
+    "cleaned_parquet_disk_mb": 318.13,
+    "disk_compression_ratio": 1.78,
+    "partition_folders": [
+      "year=2005",
+      "year=2006",
+      "year=2007",
+      "year=2008",
+      "year=2009",
+      "year=2010",
+      "year=2011",
+      "year=2012",
+      "year=2013",
+      "year=2014",
+      "year=2015",
+      "year=2016",
+      "year=2017",
+      "year=2018",
+      "year=2019",
+      "year=2020",
+      "year=2021",
+      "year=2022"
+    ]
   }
 }

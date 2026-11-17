@@ -13,17 +13,22 @@ Common Table Expressions (CTEs), subqueries, and Window Functions (RANK, DENSE_R
 Authors: Uali Sembay & Arystan Aldiyev (AAI-2605)
 """
 
+import json
 import sqlite3
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Dict
 
 import pandas as pd
 
 from src.config import (
+    AGGREGATES_DIR,
+    DB_SUMMARY_JSON,
     PARQUET_BUSINESS,
     PARQUET_REVIEWS_SINGLE,
     PARQUET_USER,
+    SQL_RESULTS_DIR,
     SQLITE_DB_PATH,
 )
 
@@ -71,6 +76,8 @@ CREATE TABLE users (
     funny INTEGER,
     cool INTEGER,
     is_elite INTEGER NOT NULL,
+    n_elite_years INTEGER NOT NULL,
+    elite_years TEXT,
     fans INTEGER,
     average_stars REAL
 );
@@ -79,7 +86,7 @@ CREATE TABLE reviews (
     review_id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     business_id TEXT NOT NULL,
-    stars REAL NOT NULL,
+    stars INTEGER NOT NULL CHECK (stars BETWEEN 1 AND 5),
     useful INTEGER NOT NULL,
     funny INTEGER NOT NULL,
     cool INTEGER NOT NULL,
@@ -102,12 +109,13 @@ CREATE INDEX IF NOT EXISTS idx_usr_elite ON users(is_elite);
 """
 
 
-def build_sqlite_database(db_path: Path = SQLITE_DB_PATH) -> Dict[str, int]:
+def build_sqlite_database(db_path: Path = SQLITE_DB_PATH) -> Dict[str, object]:
     """
     Populate the normalized SQLite database from the cleaned Parquet files.
     Returns row counts for each relational table.
     """
     t0 = time.perf_counter()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
         db_path.unlink()
 
@@ -125,8 +133,7 @@ def build_sqlite_database(db_path: Path = SQLITE_DB_PATH) -> Dict[str, int]:
         ]
         df_biz[biz_cols].to_sql("businesses", conn, if_exists="append", index=False, chunksize=10000)
 
-        # 2. Normalize M:N categories and business_categories (top 50 most frequent categories + primary macro categories)
-        from collections import Counter
+        # 2. Normalise the M:N relation business <-> category (60 most frequent Yelp categories)
         cat_counter: Counter = Counter()
         for cats_raw in df_biz["categories"].fillna("Uncategorized"):
             for c in str(cats_raw).split(","):
@@ -161,35 +168,57 @@ def build_sqlite_database(db_path: Path = SQLITE_DB_PATH) -> Dict[str, int]:
         df_usr = pd.read_parquet(PARQUET_USER)
         usr_cols = [
             "user_id", "name", "review_count", "yelping_since",
-            "useful", "funny", "cool", "is_elite", "fans", "average_stars"
+            "useful", "funny", "cool", "is_elite", "n_elite_years", "elite_years", "fans", "average_stars"
         ]
         df_usr[usr_cols].to_sql("users", conn, if_exists="append", index=False, chunksize=15000)
 
-        # 4. Load reviews (excluding raw text column in relational fact table to keep DB fast, while storing text_length)
-        df_rev = pd.read_parquet(
-            PARQUET_REVIEWS_SINGLE,
-            columns=[
-                "review_id", "user_id", "business_id", "stars",
-                "useful", "funny", "cool", "text_length", "date", "year", "month"
-            ],
-        )
-        # Filter to valid foreign keys (businesses that passed city cleaning)
-        valid_biz_ids = set(df_biz["business_id"].unique())
-        df_rev = df_rev[df_rev["business_id"].isin(valid_biz_ids)]
-        df_rev.to_sql("reviews", conn, if_exists="append", index=False, chunksize=50000)
+        # 4. Load reviews batch by batch (text is kept in Parquet; the fact table stores text_length)
+        import pyarrow.parquet as pq
+        cols = ["review_id", "user_id", "business_id", "stars", "useful", "funny", "cool",
+                "text_length", "date", "year", "month"]
+        valid_biz_ids = set(df_biz["business_id"].astype(str))
+        valid_usr_ids = set(df_usr["user_id"].astype(str))
+        skipped = 0
+        for batch in pq.ParquetFile(str(PARQUET_REVIEWS_SINGLE)).iter_batches(batch_size=100_000, columns=cols):
+            df_rev = batch.to_pandas()
+            ok = df_rev["business_id"].isin(valid_biz_ids) & df_rev["user_id"].isin(valid_usr_ids)
+            skipped += int((~ok).sum())
+            df_rev[ok].to_sql("reviews", conn, if_exists="append", index=False, chunksize=50_000)
 
+        # 5. Aggregate table for the dashboard / report (stored back into SQLite and Parquet)
         conn.executescript(INDEX_DDL)
+        agg = pd.read_sql_query(AGG_CITY_CATEGORY_SQL, conn)
+        agg.to_sql("agg_city_category_year", conn, if_exists="replace", index=False)
+        AGGREGATES_DIR.mkdir(parents=True, exist_ok=True)
+        agg.to_parquet(AGGREGATES_DIR / "city_category_year.parquet", index=False)
+
         conn.commit()
 
+        fk_violations = conn.execute("PRAGMA foreign_key_check;").fetchall()
         counts = {}
-        for tbl in ["businesses", "categories", "business_categories", "users", "reviews"]:
-            cur = conn.execute(f"SELECT COUNT(*) FROM {tbl}")
-            counts[tbl] = int(cur.fetchone()[0])
-        counts["build_seconds"] = round(time.perf_counter() - t0, 2)
-        return counts
+        for tbl in ["businesses", "categories", "business_categories", "users", "reviews", "agg_city_category_year"]:
+            counts[tbl] = int(conn.execute(f"SELECT COUNT(*) FROM {tbl}").fetchone()[0])
+        summary = {
+            "row_counts": counts,
+            "reviews_skipped_fk": skipped,
+            "foreign_key_violations": len(fk_violations),
+            "db_size_mb": None,
+            "build_seconds": round(time.perf_counter() - t0, 2),
+        }
     finally:
         conn.close()
+    summary["db_size_mb"] = round(db_path.stat().st_size / 2**20, 1)
+    with open(DB_SUMMARY_JSON, "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+    return summary
 
+
+AGG_CITY_CATEGORY_SQL = """
+    SELECT b.city, b.state, b.primary_category, r.year,
+           COUNT(*) AS review_count, AVG(r.stars) AS mean_stars, AVG(r.useful) AS mean_useful
+    FROM reviews r JOIN businesses b ON r.business_id = b.business_id
+    GROUP BY b.city, b.state, b.primary_category, r.year
+"""
 
 # 8 Analytical SQL Queries covering JOIN, GROUP BY/HAVING, CTEs, Subqueries, and Window Functions
 SQL_QUERIES: Dict[str, str] = {
@@ -279,20 +308,31 @@ SQL_QUERIES: Dict[str, str] = {
         ORDER BY city, year;
     """,
     "Q4_Elite_vs_Regular_User_Behavior": """
-        -- Q4: Multi-table JOIN + CASE Aggregation: Elite vs Regular User Rating Bias & Text Length
+        -- Q4: JOIN + CASE + GROUP BY: rating behaviour of Elite vs regular reviewers.
+        -- A review counts as an "elite review" only if it was written in one of the user's elite years.
+        WITH tagged AS (
+            SELECT
+                r.review_id, r.stars, r.text_length, r.useful, u.user_id,
+                CASE
+                    WHEN u.is_elite = 0 THEN '3. Never Elite'
+                    WHEN instr(',' || u.elite_years || ',', ',' || r.year || ',') > 0 THEN '1. Elite (review in elite year)'
+                    ELSE '2. Elite user, other year'
+                END AS user_tier
+            FROM reviews r
+            JOIN users u ON r.user_id = u.user_id
+        )
         SELECT
-            CASE WHEN u.is_elite = 1 THEN 'Elite Reviewers' ELSE 'Regular Users' END AS user_tier,
-            COUNT(DISTINCT u.user_id) AS active_users,
-            COUNT(r.review_id) AS total_reviews,
-            ROUND(AVG(r.stars), 4) AS mean_stars,
-            ROUND(AVG(r.text_length), 1) AS mean_text_length_chars,
-            ROUND(AVG(r.useful), 3) AS mean_useful_votes,
-            ROUND(100.0 * SUM(CASE WHEN r.stars = 1.0 THEN 1 ELSE 0 END) / COUNT(r.review_id), 2) AS pct_1_star,
-            ROUND(100.0 * SUM(CASE WHEN r.stars = 5.0 THEN 1 ELSE 0 END) / COUNT(r.review_id), 2) AS pct_5_star
-        FROM reviews r
-        JOIN users u ON r.user_id = u.user_id
-        GROUP BY u.is_elite
-        ORDER BY u.is_elite DESC;
+            user_tier,
+            COUNT(DISTINCT user_id) AS active_users,
+            COUNT(review_id) AS total_reviews,
+            ROUND(AVG(stars), 4) AS mean_stars,
+            ROUND(AVG(text_length), 1) AS mean_text_length_chars,
+            ROUND(AVG(useful), 3) AS mean_useful_votes,
+            ROUND(100.0 * SUM(CASE WHEN stars = 1 THEN 1 ELSE 0 END) / COUNT(review_id), 2) AS pct_1_star,
+            ROUND(100.0 * SUM(CASE WHEN stars = 5 THEN 1 ELSE 0 END) / COUNT(review_id), 2) AS pct_5_star
+        FROM tagged
+        GROUP BY user_tier
+        ORDER BY user_tier;
     """,
     "Q5_Subquery_Category_Polarization": """
         -- Q5: Correlated/Scalar Subquery + Polarization Ratio: Categories exceeding global average useful engagement
@@ -305,7 +345,7 @@ SQL_QUERIES: Dict[str, str] = {
                 3
             ) AS diff_from_global_mean,
             ROUND(
-                100.0 * SUM(CASE WHEN r.stars IN (1.0, 5.0) THEN 1 ELSE 0 END) / COUNT(r.review_id),
+                100.0 * SUM(CASE WHEN r.stars IN (1, 5) THEN 1 ELSE 0 END) / COUNT(r.review_id),
                 2
             ) AS extreme_rating_polarization_pct,
             ROUND(AVG(r.useful), 3) AS avg_useful
@@ -404,9 +444,11 @@ def execute_all_sql_queries(db_path: Path = SQLITE_DB_PATH) -> Dict[str, pd.Data
     try:
         conn.execute("PRAGMA temp_store = MEMORY;")
         conn.execute("PRAGMA cache_size = -64000;")
+        SQL_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
         for q_name, q_sql in SQL_QUERIES.items():
             df_res = pd.read_sql_query(q_sql, conn)
             results[q_name] = df_res
+            df_res.to_csv(SQL_RESULTS_DIR / f"{q_name}.csv", index=False)
     finally:
         conn.close()
 

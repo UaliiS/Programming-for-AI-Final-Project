@@ -1,152 +1,235 @@
 {
-  "split_strategy": "Chronological Split (Train: 2005-2019, Test: 2020-2022) - Zero Temporal Leakage",
+  "split_strategy": "Chronological: train years <= 2018 (120,000 sampled), validation 2019 (20,000), test >= 2020 (30,000)",
+  "selection_rule": "best validation macro-F1 (test set used only for final reporting)",
   "train_samples": 120000,
+  "validation_samples": 20000,
   "test_samples": 30000,
-  "best_model": "Model 3: TF-IDF (1-2 ngrams) + LogisticRegression",
+  "test_class_distribution_percent": {
+    "1": 20.06,
+    "2": 6.63,
+    "3": 6.8,
+    "4": 13.21,
+    "5": 53.3
+  },
   "models_comparison": [
     {
-      "model_name": "Baseline: DummyClassifier (Majority Class)",
-      "accuracy": 0.5378,
-      "f1_macro": 0.1399,
-      "f1_weighted": 0.3761,
-      "mae_stars": 1.2432,
-      "rmse_stars": 2.026,
-      "train_time_seconds": 4.681,
-      "inference_ms_per_1k_reviews": 33.678,
-      "model_size_mb": 0.018
+      "model_name": "B0: Majority class (Dummy)",
+      "validation": {
+        "accuracy": 0.5173,
+        "f1_macro": 0.1364,
+        "f1_weighted": 0.3527,
+        "mae_stars": 1.2216,
+        "within_1_star": 0.6754
+      },
+      "test": {
+        "accuracy": 0.533,
+        "f1_macro": 0.1391,
+        "f1_weighted": 0.3707,
+        "mae_stars": 1.2693,
+        "within_1_star": 0.6651
+      },
+      "train_time_seconds": 3.63,
+      "inference_ms_per_1k_reviews": 23.3,
+      "train_memory_increase_mb": 5.3,
+      "model_size_mb": 0.0
     },
     {
-      "model_name": "Model 1: TF-IDF (1-2 ngrams) + MultinomialNB",
-      "accuracy": 0.7198,
-      "f1_macro": 0.5043,
-      "f1_weighted": 0.6991,
-      "mae_stars": 0.4357,
-      "rmse_stars": 0.9676,
-      "train_time_seconds": 13.075,
-      "inference_ms_per_1k_reviews": 49.545,
-      "model_size_mb": 1.702
+      "model_name": "B1: TF-IDF + LogisticRegression (baseline)",
+      "validation": {
+        "accuracy": 0.7303,
+        "f1_macro": 0.5997,
+        "f1_weighted": 0.7264,
+        "mae_stars": 0.3361,
+        "within_1_star": 0.956
+      },
+      "test": {
+        "accuracy": 0.7517,
+        "f1_macro": 0.5873,
+        "f1_weighted": 0.7479,
+        "mae_stars": 0.318,
+        "within_1_star": 0.9563
+      },
+      "train_time_seconds": 42.0,
+      "inference_ms_per_1k_reviews": 59.7,
+      "train_memory_increase_mb": 322.7,
+      "model_size_mb": 2.43
     },
     {
-      "model_name": "Model 2: TF-IDF (1-2 ngrams) + SGD Linear Hinged/LogLoss",
-      "accuracy": 0.7465,
-      "f1_macro": 0.5444,
-      "f1_weighted": 0.7265,
-      "mae_stars": 0.3658,
-      "rmse_stars": 0.8449,
-      "train_time_seconds": 14.001,
-      "inference_ms_per_1k_reviews": 44.454,
-      "model_size_mb": 1.513
+      "model_name": "A1: Bag-of-Words + MultinomialNB",
+      "validation": {
+        "accuracy": 0.6673,
+        "f1_macro": 0.5638,
+        "f1_weighted": 0.6818,
+        "mae_stars": 0.4461,
+        "within_1_star": 0.9375
+      },
+      "test": {
+        "accuracy": 0.6894,
+        "f1_macro": 0.56,
+        "f1_weighted": 0.7051,
+        "mae_stars": 0.4382,
+        "within_1_star": 0.9329
+      },
+      "train_time_seconds": 12.22,
+      "inference_ms_per_1k_reviews": 57.9,
+      "train_memory_increase_mb": 219.8,
+      "model_size_mb": 1.27
     },
     {
-      "model_name": "Model 3: TF-IDF (1-2 ngrams) + LogisticRegression",
-      "accuracy": 0.7381,
-      "f1_macro": 0.5582,
-      "f1_weighted": 0.7295,
-      "mae_stars": 0.3586,
-      "rmse_stars": 0.8103,
-      "train_time_seconds": 26.88,
-      "inference_ms_per_1k_reviews": 40.828,
-      "model_size_mb": 1.897
+      "model_name": "A2: TF-IDF 1-2 grams (100K vocab) + LinearSVC, class-balanced",
+      "validation": {
+        "accuracy": 0.7172,
+        "f1_macro": 0.5865,
+        "f1_weighted": 0.7186,
+        "mae_stars": 0.3531,
+        "within_1_star": 0.9508
+      },
+      "test": {
+        "accuracy": 0.7415,
+        "f1_macro": 0.5828,
+        "f1_weighted": 0.7436,
+        "mae_stars": 0.3297,
+        "within_1_star": 0.9521
+      },
+      "train_time_seconds": 28.87,
+      "inference_ms_per_1k_reviews": 60.8,
+      "train_memory_increase_mb": 162.8,
+      "model_size_mb": 4.87
+    },
+    {
+      "model_name": "A3: LSA embeddings (SVD-300) + LogisticRegression",
+      "validation": {
+        "accuracy": 0.7162,
+        "f1_macro": 0.5713,
+        "f1_weighted": 0.7088,
+        "mae_stars": 0.3763,
+        "within_1_star": 0.9452
+      },
+      "test": {
+        "accuracy": 0.743,
+        "f1_macro": 0.5722,
+        "f1_weighted": 0.7374,
+        "mae_stars": 0.3542,
+        "within_1_star": 0.9436
+      },
+      "train_time_seconds": 59.42,
+      "inference_ms_per_1k_reviews": 84.5,
+      "train_memory_increase_mb": 338.4,
+      "model_size_mb": 110.96
     }
   ],
+  "best_model": "B1: TF-IDF + LogisticRegression (baseline)",
+  "best_vs_tfidf_baseline": {
+    "macro_f1_gain": 0.0,
+    "mae_change": 0.0
+  },
+  "best_per_class_f1": {
+    "1": 0.8338,
+    "2": 0.3463,
+    "3": 0.4127,
+    "4": 0.4653,
+    "5": 0.8783
+  },
   "confusion_matrix": [
     [
-      5035,
-      395,
-      103,
-      74,
-      261
+      5239,
+      440,
+      111,
+      59,
+      169
     ],
     [
-      826,
-      483,
-      308,
-      126,
-      145
+      869,
+      606,
+      325,
+      100,
+      88
     ],
     [
-      330,
-      327,
-      655,
-      469,
-      269
+      273,
+      376,
+      782,
+      439,
+      170
     ],
     [
-      90,
       68,
-      378,
-      1802,
-      1723
+      63,
+      448,
+      1923,
+      1461
     ],
     [
-      150,
-      27,
       99,
-      1690,
-      14167
+      27,
+      84,
+      1781,
+      14000
     ]
   ],
+  "errors_total": 7450,
+  "errors_adjacent_share": 0.824,
   "confusion_matrix_plot": "outputs/plots/fig6_confusion_matrix.png",
   "error_analysis_samples": [
     {
-      "review_id": "kLpwwGyCPDhsnwuBAze0VQ",
-      "true_stars": 5,
-      "predicted_stars": 3,
-      "text_snippet": "I'm from New Jersey, and Florida isn't known for good pizza, so I wasn't expecting much, just a place to get a pizza close to home, but was really surprised! Cr..."
-    },
-    {
-      "review_id": "Q-SNTYdDreZZMs9M9sheWg",
-      "true_stars": 3,
+      "review_id": "7DEp_ZqZwXH5zIUO7BE4IQ",
+      "true_stars": 2,
       "predicted_stars": 5,
-      "text_snippet": "2018: No long do I use or recommend the Repair shop.  Because of the last work on my Jeep Grand Cherokee heater core replacement.  Had to return 2 times to have..."
+      "text_snippet": "Used to come to PJ's all the time and would receive excellent food AND service, although the former has definitely gone down in quality.  **sensor info- lobster pasta gave my family the runs and made ..."
     },
     {
-      "review_id": "kahSgKWZwIbAdjs_VEIXYg",
-      "true_stars": 3,
-      "predicted_stars": 4,
-      "text_snippet": "Having problems lately when ordering pizzas from this place. Now with the corona virus, they seem to get my phone order wrong. I used to get my pizza request pe..."
-    },
-    {
-      "review_id": "qqPo6XEcjAZjQB9fXJab8g",
+      "review_id": "60Qgd-KvXMZtOnxUXTtQrQ",
       "true_stars": 1,
+      "predicted_stars": 5,
+      "text_snippet": "have been to the riverview fl. Location many times and except for the very first visit, all have been very good, food wise. They had just opened and were not up to speed.  Have complained before about..."
+    },
+    {
+      "review_id": "ilUKYbAks05Sj5M28tn1IQ",
+      "true_stars": 1,
+      "predicted_stars": 5,
+      "text_snippet": "Absolutely terrible, my boyfriend needed glasses and so we went here to get some, but when they arrived in the mail they were so small they squeeze his head and his nose they are like kid size ?..."
+    },
+    {
+      "review_id": "qR9Pyl2bSlp2gCytmfishw",
+      "true_stars": 1,
+      "predicted_stars": 5,
+      "text_snippet": "Es una falta de respeto que hace una semana que me realice el test de covid19 y aun no e residido los resultados cuando amistades m\u00edas que se lo hicieron el mismo d\u00eda ya los tienen y est\u00e1n positivos n..."
+    },
+    {
+      "review_id": "fPxRJLl58A23VR2J384tZw",
+      "true_stars": 1,
+      "predicted_stars": 4,
+      "text_snippet": "Fair warning to any indoor gardeners: I would make sure to leave anything you buy here outside and treat for just about everything. I bought some herbs there and have subsequently had three different ..."
+    },
+    {
+      "review_id": "nZS8_6TlB__TInZZbkiw7g",
+      "true_stars": 3,
       "predicted_stars": 2,
-      "text_snippet": "I was really looking forward to this bagel shop but it was very disappointing. The bagel itself was actually pretty good and I should have just gotten that; but..."
+      "text_snippet": "I used to come here a lot for sushi. The slices are nice and big and fresh but the sushi rice absolutely sucks! How can rice be both hard and soggy at the same tIme? And sushi rice is supposed to be s..."
     },
     {
-      "review_id": "0K0QkMrQUD8JDBYfhh64Tw",
+      "review_id": "OAOpRdu4UWmFjc007FewMA",
       "true_stars": 5,
       "predicted_stars": 4,
-      "text_snippet": "I can't believe I've never reviewed Village Whiskey!  I have been a big fan for a long time and consistently maintain that VW serves the best burgers and fries ..."
+      "text_snippet": "I was pleasantly surprised with my first stay at the Drury Plaza Hotel. The hotel was large and spacious. Front staff during check in and check out were friendly and efficient. The room was clean and ..."
     },
     {
-      "review_id": "5qwvGPTBKo2IIXhPsZjzPw",
-      "true_stars": 1,
-      "predicted_stars": 5,
-      "text_snippet": "To walk into a place, make eye contact with people who work there and not even get a smile? I must be butt ugly. (Although I know I'm not) Wish I knew your food..."
+      "review_id": "yJSk9FjeimHR_J5rTzPkFw",
+      "true_stars": 2,
+      "predicted_stars": 1,
+      "text_snippet": "Not a bad place for breakfast unless you want eggs, they have no toast, and they serve with paper plates and plastic utensils..."
     },
     {
-      "review_id": "NOSIKibJDOKjr8tbFvOwjQ",
-      "true_stars": 5,
-      "predicted_stars": 4,
-      "text_snippet": "So happy we tried this place! Service was wonderful. Food was even better. We ordered the garlic knots. They were hot, salty and delicious. The accompanying mar..."
+      "review_id": "hY2Jw7FEqPfbWzAev-zycA",
+      "true_stars": 3,
+      "predicted_stars": 2,
+      "text_snippet": "We ordered for the first time last night.  We did not realize it was 30% off all menu items.  We called and were asked to hold.  After 5 minutes passed and I hung up and called again.  The young lady ..."
     },
     {
-      "review_id": "Wny2PvQmTlZv4qdqZW9I8A",
+      "review_id": "EkKnE6Scmks-3MjdSfVTrw",
       "true_stars": 2,
       "predicted_stars": 3,
-      "text_snippet": "Came here for brunch with a group of about 15. We were told they couldn't seat us outside because our party was too large and essentially we'd take the entire o..."
-    },
-    {
-      "review_id": "mSaKtx2BywTDJY-rxgegbw",
-      "true_stars": 2,
-      "predicted_stars": 4,
-      "text_snippet": "Went there for a date with my loving fiance and would what could of been a great birthday. Instead was a nightmare dealing with there staff. The host was deffin..."
-    },
-    {
-      "review_id": "nphGXW6XzwrVoEq_m_fEyw",
-      "true_stars": 4,
-      "predicted_stars": 5,
-      "text_snippet": "I have moved the South and no longer live on 2nd Street, thanks for the update and for acknowledging my concerns about the neighborhood, my husband passed a cou..."
+      "text_snippet": "This high-end restaurant has been around awhile, which makes me think hmm, it must be worth it so we tried it - twice.  The menu is a la carte so that $40-70 steak you order, that's all you get.  Want..."
     }
   ]
 }

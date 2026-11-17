@@ -1,8 +1,10 @@
-# Ignore large raw/parquet/db files and virtualenv when pushing to GitHub
+# Large / regenerated artefacts (rebuilt by `python main.py --auto`)
 .venv/
 __pycache__/
 *.pyc
 .DS_Store
-data/raw/*.json
+data/raw/
 data/parquet/
-data/db/*.db
+data/db/
+models/*.joblib
+docs/~$*

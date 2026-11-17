@@ -1,0 +1,4 @@
+user_tier,active_users,total_reviews,mean_stars,mean_text_length_chars,mean_useful_votes,pct_1_star,pct_5_star
+1. Elite (review in elite year),35995,150891,3.9837,816.7,2.546,3.33,37.75
+"2. Elite user, other year",18182,41398,3.9098,637.2,1.377,6.48,40.31
+3. Never Elite,418176,584187,3.6784,498.2,0.817,18.98,48.9

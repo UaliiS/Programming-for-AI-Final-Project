@@ -1,0 +1,13 @@
+category_name,review_volume,category_mean_stars,diff_from_global_mean,extreme_rating_polarization_pct,avg_useful
+Auto Repair,14639,3.411,-0.339,86.47,1.518
+Home Services,26468,3.384,-0.366,85.62,1.987
+Health & Medical,21767,3.612,-0.138,83.18,2.002
+Automotive,26387,3.372,-0.378,82.82,1.471
+Hair Salons,12958,4.057,0.307,82.23,1.52
+Local Services,22942,3.584,-0.166,82.17,1.572
+Pets,9290,3.825,0.075,81.14,2.002
+Waxing,9358,4.034,0.284,80.95,1.107
+Skin Care,8672,4.025,0.275,80.71,1.517
+Hair Removal,12087,3.985,0.235,80.6,1.285
+Beauty & Spas,40926,3.873,0.123,78.7,1.34
+Home & Garden,12708,3.43,-0.32,73.84,1.685

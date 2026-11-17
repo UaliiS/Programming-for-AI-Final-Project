@@ -1,107 +1,129 @@
-# ⭐ Yelp Reviews at Scale: Ratings, Categories and Cities
+# Yelp Reviews at Scale: Ratings, Categories and Cities
 
-**Final Project — Topic #44 | Cluster 8: Large-Scale Data Processing (Pandas, Polars, Dask, Parquet)**  
-**Course:** Programming for Data Analysis and Database (MSc in Applied Artificial Intelligence)  
-**Authors:** **Uali Sembay** & **Arystan Aldiyev** (`AAI-2605`)  
-**Dataset Source:** [Official Yelp Open Dataset (`Yelp-JSON.zip`, 4.35 GB)](https://business.yelp.com/data/resources/open-dataset/)
+Final project for **Programming for Data Analysis and Database** (MSc Applied Artificial Intelligence).
+Topic #44, Cluster 8: Large-Scale Data Processing (Pandas, Polars, Dask, Parquet).
 
----
+**Team:** Uali Sembay and Arystan Aldiyev (group AAI-2605)
 
-## 📌 Project Overview
+The project streams the official [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/)
+(JSON Lines) without unpacking the 4.3 GB archive. It converts the data to partitioned Parquet with
+chunked processing and checks data quality. It then compares Pandas, Dask and Polars on the same
+task, loads a normalised SQLite database (8 SQL queries), tests three hypotheses about ratings,
+cities and Elite reviewers, and predicts a review's star rating from its text. The model
+comparison uses a TF-IDF baseline and leakage-free chronological splits.
 
-This repository contains the complete, reproducible implementation for **Topic #44: "Yelp Reviews at Scale: Ratings, Categories and Cities"**. It processes **1,345,026 real records** (**747.30 MB** of raw JSONL data extracted directly from the official Yelp Open Dataset: **750,000 real reviews**, **150,346 real businesses**, and **444,680 user profiles**) using out-of-core chunked streaming, partitioned **Apache Parquet**, **Polars LazyFrame**, **Dask**, **Pandas**, **SQLite3** (5-table normalized 3NF schema with 8 advanced SQL queries), parametric/non-parametric statistical hypothesis testing, and leakage-free **TF-IDF NLP star-rating prediction**.
+## Quick start
 
----
+Requires Python 3.11+ (developed with 3.12) and about 3 GB of free disk space.
 
-## 🗂️ Repository Architecture
-
-```text
-yelp_analytics_project/
-├── main.py                                   # Interactive Console CLI Menu & Automated Pipeline (--auto)
-├── app.py                                    # 5-Tab Interactive Streamlit Analytics Dashboard
-├── Yelp_Reviews_At_Scale_Analysis.ipynb      # Complete Jupyter Notebook with Code, Outputs & Plots
-├── requirements.txt                          # Exact pinned Python 3.12 package versions
-├── README.md                                 # Project Documentation & Execution Guide
-├── src/
-│   ├── __init__.py
-│   ├── config.py                             # Paths, constants, and directory initialization
-│   ├── data_generator.py                     # HTTP Range streaming extractor for official Yelp-JSON.zip
-│   ├── etl_pipeline.py                       # Out-of-core JSONL -> Partitioned Parquet ETL & Data Quality Audit
-│   ├── benchmarks.py                         # Comparative Engine Benchmarks (JSONL Baseline vs Pandas vs Dask vs Polars)
-│   ├── database.py                           # Normalized 5-table SQLite builder & 8 Analytical SQL Queries
-│   ├── eda_analytics.py                      # Statistical Hypothesis Tests (Welch t, ANOVA, Mann-Whitney) & Plots
-│   ├── ml_models.py                          # Leakage-Free Chronological NLP Star-Rating Predictor & Error Analysis
-│   └── generate_deliverables.py              # Automated generator for .ipynb and .pptx deliverables
-├── docs/
-│   ├── FINAL_PROJECT_REPORT.md               # Comprehensive Written Project Report (Methods, Tables, ER Diagram)
-│   └── Presentation_Yelp_Reviews_At_Scale.pptx # 10-Slide Project Defense Presentation (.pptx)
-├── models/
-│   └── yelp_star_predictor.joblib            # Trained TF-IDF + LogisticRegression Pipeline (Saved via joblib)
-├── outputs/
-│   ├── data_quality_audit.json               # Detailed Data Quality Audit & Memory Optimization Metrics
-│   ├── benchmark_results.json                # Wall-clock Time, Peak RAM & Equivalence Check across 4 Engines
-│   ├── hypothesis_tests.json                 # Test statistics and p-values for H1, H2, and H3
-│   ├── ml_model_metrics.json                 # Accuracy, F1-Macro, MAE, RMSE, Confusion Matrix & Error Samples
-│   └── plots/                                # 6 High-Resolution Static PNG Plots + 1 Interactive Plotly HTML
-└── data/
-    ├── raw/                                  # Extracted official Yelp JSONL files (747.30 MB)
-    ├── parquet/                              # Cleaned Snappy Parquet & Year-Partitioned Parquet datasets
-    └── db/
-        └── yelp_analytics.db                 # Normalized 5-table SQLite Relational Database (1.74M total rows)
-```
-
----
-
-## 🚀 Quick Start & Run Instructions
-
-### 1. Environment Setup
 ```bash
-cd /Users/ualisembay/Desktop/yelp_analytics_project
+git clone <this-repository-url> yelp-reviews-at-scale
+cd yelp-reviews-at-scale
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+
+python main.py --auto                # full pipeline: download -> ETL -> benchmark -> SQL -> EDA -> models
+python main.py                       # interactive console menu (options 0–9)
+streamlit run app.py                 # dashboard with filters (year, city, category, Elite status)
+python -m src.build_notebook         # rebuild and execute the analysis notebook
 ```
 
-### 2. Run the Full Automated Pipeline (Stages 1 to 6)
-```bash
-python main.py --auto
+**Run time.** Expect 30–60 minutes for the first `--auto` run. Most of it is stage 1, which streams
+the ~4.3 GB archive from Yelp once. Later runs reuse `data/raw/` and skip the download.
+
+**Offline or manual download.** You can download `Yelp-JSON.zip` (or `yelp_dataset.tar`) yourself
+and point the pipeline at it:
+`YELP_ARCHIVE=/path/to/Yelp-JSON.zip python main.py --auto`.
+
+The raw data, Parquet files, database and trained model are not committed to Git because of their
+size (see `.gitignore`). They are rebuilt by `python main.py --auto`. The small result files in
+`outputs/` are committed.
+
+## Data
+
+| File (data/raw) | Rows kept | How |
+|---|---|---|
+| `yelp_academic_dataset_business.json` | all ~150K businesses | streamed in full |
+| `yelp_academic_dataset_review.json` | ~777K of ~7M reviews | **systematic sample: every 9th line** of the full file |
+| `yelp_academic_dataset_user.json` | every user who wrote a sampled review (real records, including the real `elite` years) | streamed; the multi-GB `friends` list is dropped |
+
+The full review file is grouped by business. Taking its first N lines would therefore cover only
+about 15% of businesses. Taking every k-th line covers all of them while keeping more than the
+500K rows the course requires. `data/raw/_extraction_manifest.json` records exactly what was kept.
+
+## Pipeline
+
+| Stage | Module | What it does |
+|---|---|---|
+| 1 | `src/data_download.py` | HTTP stream: ZIP raw deflate → gzip → tar, read line by line, with sampling and user filtering |
+| 2 | `src/etl_pipeline.py` | Chunked JSONL reading (100K rows), data-quality audit (duplicates, empty text, invalid stars/dates, orphan keys, vote outliers, IQR), dtype optimisation with before/after memory, year-partitioned Parquet plus a single Parquet file written incrementally |
+| 3 | `src/benchmarks.py` | One task in four engines: JSONL chunked baseline, Pandas, Dask (lazy) and Polars (lazy). Each runs in its own process; we record median time and peak RSS and check that the result tables are identical |
+| 4 | `src/database.py`, `src/er_diagram.py` | SQLite schema with 5 tables and foreign keys, an aggregate table, an ER diagram and 8 queries (JOIN, GROUP BY/HAVING, CTE, subqueries, window functions RANK/LAG/NTILE/AVG OVER). Results are saved to `outputs/sql_results/*.csv` |
+| 5 | `src/eda_analytics.py` | Descriptive statistics, 3 hypothesis tests with effect sizes, 7 static figures and 2 interactive Plotly figures |
+| 6 | `src/ml_models.py` | Star prediction from text: majority baseline and TF-IDF+LogReg baseline, compared with BoW+NB, a larger TF-IDF+LinearSVC and LSA embeddings+LogReg. Split: train ≤2018, validation 2019, test ≥2020 |
+| UI | `main.py`, `app.py` | Console menu and Streamlit dashboard |
+
+## Database schema
+
+![ER diagram](outputs/plots/er_diagram.png)
+
+```mermaid
+erDiagram
+    users ||--o{ reviews : writes
+    businesses ||--o{ reviews : receives
+    businesses ||--o{ business_categories : has
+    categories ||--o{ business_categories : groups
+    users { TEXT user_id PK  INTEGER is_elite  TEXT elite_years  TEXT yelping_since }
+    reviews { TEXT review_id PK  TEXT user_id FK  TEXT business_id FK  INTEGER stars  INTEGER year }
+    businesses { TEXT business_id PK  TEXT city  TEXT state  REAL stars  TEXT primary_category }
+    business_categories { TEXT business_id PK  INTEGER category_id PK }
+    categories { INTEGER category_id PK  TEXT category_name }
 ```
-*(If `data/raw/*.json` is already present, Stage 1 verifies the cached 747.30 MB official Yelp JSONL files in `<1s`; otherwise it streams them directly from `https://business.yelp.com/external-assets/files/Yelp-JSON.zip`.)*
 
-### 3. Launch the Interactive Console Menu (CLI)
-```bash
-python main.py
+## Repository layout
+
 ```
-Allows you to interactively run any stage (`1`–`8`) or type custom restaurant/business reviews in Option `[7]` to receive live NLP star-rating predictions and class probabilities.
-
-### 4. Launch the Interactive Streamlit Dashboard
-```bash
-streamlit run app.py
+main.py                     console menu + `--auto` pipeline
+app.py                      Streamlit dashboard
+src/config.py               paths and settings
+src/data_download.py        streamed extraction of the official archive
+src/etl_pipeline.py         chunked ETL, audit, dtype optimisation, Parquet
+src/benchmarks.py           Pandas vs Dask vs Polars vs JSONL baseline
+src/database.py             SQLite schema, loading, 8 SQL queries
+src/er_diagram.py           ER diagram drawing
+src/eda_analytics.py        EDA, hypothesis tests, figures
+src/ml_models.py            text models and evaluation
+src/build_notebook.py       builds/executes the notebook
+Yelp_Reviews_At_Scale_Analysis.ipynb
+outputs/                    JSON results, SQL result CSVs, figures, aggregates
+docs/                       written report (.docx) and presentation (.pptx)
 ```
-Opens the 5-tab interactive web dashboard powered by **Polars LazyFrame** with sidebar filters for **Year Range (`2005–2022`)**, **Metropolitan City**, **Primary Category**, and **Elite vs. Regular User Tier**, plus live SQL query execution and an interactive review classifier.
 
----
+## How the course requirements are met
 
-## 📊 Summary of Key Results
+| # | Requirement | Where |
+|---|---|---|
+| 1 | ≥5 functions besides `main` | Each module splits its stage into functions (e.g. `stream_jsonl_chunks`, `optimize_dataframe_dtypes`, `process_users`, `run_all_benchmarks`, `build_sqlite_database`, `run_statistical_hypotheses`, `train_and_evaluate_models`) |
+| 2 | lists / dicts | Audit counters, the engine registry, the SQL query dictionary, menu options, result summaries |
+| 3 | if / elif / else | Menu dispatch, cleaning rules, tier labels |
+| 4 | loops | Chunk loops, streaming loops, the menu `while True`, the benchmark repeats |
+| 5 | file I/O | JSONL read; JSON, CSV, Parquet, SQLite and joblib written |
+| 6 | try / except | Malformed JSON lines, missing files, invalid menu input, empty review text |
+| 7 | UI | `main.py` menu and `app.py` dashboard |
+| 8 | modularity | `src/` package; standard library modules `json`, `pathlib`, `datetime`, `tarfile`, `zlib`, `sqlite3`, `multiprocessing` |
+| 9 | approaches vs baseline | Engine benchmark (time, memory, result equality) and text-model comparison (quality, time, memory, size) |
+| 10 | SQL | SQLite, ER diagram, 8 queries, results loaded into Pandas |
+| 11 | volume | ~777K reviews and ~760 MB of raw JSONL; chunking, dtype optimisation and Parquet throughout |
 
-### 1. Multi-Engine Benchmark (748,714 Cleaned Reviews)
-| Engine / Approach | Time (s) | Peak RAM (MB) | Global Mean Stars | Speedup vs. Baseline |
-| :--- | :---: | :---: | :---: | :---: |
-| **Baseline: JSONL Chunked (Pandas)** | `68.559 s` | `405.53 MB` | `3.769781` | `1.00x` |
-| **Approach 1: Pandas (Parquet Eager)** | `1.839 s` | `85.12 MB` | `3.769781` | `37.28x` |
-| **Approach 2: Dask (Lazy Parquet)** | `2.683 s` | `85.76 MB` | `3.769781` | `25.55x` |
-| **Approach 3: Polars LazyFrame (`scan_parquet`)** | **`0.190 s`** | **`0.13 MB`** | `3.769781` | **`361.79x`** |
+## Team contributions
 
-### 2. NLP Star-Rating Prediction (`Train: 2005–2019`, `Test: 2020–2022`)
-| Model Pipeline | Accuracy | Macro-F1 | Weighted-F1 | MAE (Stars) | RMSE (Stars) |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Baseline: `DummyClassifier` (Majority 5★)** | `0.5378` | `0.1399` | `0.3761` | `1.2432` | `2.0260` |
-| **Model 1: `TF-IDF (1-2 ngrams)` + `MultinomialNB`** | `0.7198` | `0.5043` | `0.6991` | `0.4357` | `0.9676` |
-| **Model 2: `TF-IDF (1-2 ngrams)` + `SGDClassifier`** | **`0.7465`** | `0.5444` | `0.7265` | `0.3658` | `0.8449` |
-| **Model 3: `TF-IDF (1-2 ngrams)` + `LogisticRegression`** | `0.7381` | **`0.5582`** | **`0.7295`** | **`0.3586`** | **`0.8103`** |
+| Member | Main responsibilities |
+|---|---|
+| Uali Sembay | Streamed download and sampling, chunked ETL and data-quality audit, dtype optimisation and Parquet, engine benchmark, SQLite schema, ER diagram, SQL queries |
+| Arystan Aldiyev | EDA and hypothesis tests, visualisations, text models and evaluation, console menu, Streamlit dashboard, notebook |
+| Both | Report, presentation, code review and testing |
 
----
+## Results
 
-## 👥 Team Contributions
-- **Uali Sembay (`AAI-2605`, 50%):** Out-of-core HTTP Range streaming extractor, chunked JSONL $\rightarrow$ Partitioned Parquet ETL, memory optimization & data quality audit, multi-engine benchmarking (Pandas vs. Dask vs. Polars), 5-table normalized SQLite database & 8 analytical SQL queries.
-- **Arystan Aldiyev (`AAI-2605`, 50%):** Exploratory data analysis (EDA), statistical hypothesis testing (`H1`–`H3`), static & interactive Plotly visualizations, leakage-free chronological NLP modeling & error analysis, interactive CLI menu (`main.py`), and Streamlit dashboard (`app.py`).
+See `docs/FINAL_PROJECT_REPORT.docx` and the files in `outputs/`.

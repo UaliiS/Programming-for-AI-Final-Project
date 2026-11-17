@@ -1,0 +1,14 @@
+{
+  "row_counts": {
+    "businesses": 150346,
+    "categories": 60,
+    "business_categories": 399265,
+    "users": 462196,
+    "reviews": 776476,
+    "agg_city_category_year": 34739
+  },
+  "reviews_skipped_fk": 0,
+  "foreign_key_violations": 0,
+  "db_size_mb": 268.4,
+  "build_seconds": 22.56
+}
