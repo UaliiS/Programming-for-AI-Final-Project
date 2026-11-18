@@ -18,7 +18,8 @@ files to `data/raw/`. It keeps:
 `data/raw/_extraction_manifest.json` records exactly what was kept.
 
 **Offline use.** If you download the archive yourself:
-`YELP_ARCHIVE=/path/to/Yelp-JSON.zip python main.py --auto`
+`YELP_ARCHIVE=/path/to/Yelp-JSON.zip python main.py --auto` (macOS / Linux) or
+`$env:YELP_ARCHIVE="C:\path\to\Yelp-JSON.zip"; python main.py --auto` (Windows PowerShell)
 
 **Included in this submission.** The processed results are small enough to include:
 

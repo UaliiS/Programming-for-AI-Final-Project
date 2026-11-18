@@ -231,6 +231,8 @@ def stream_extract_official_yelp_dataset(
                 with open(RAW_REVIEW_JSON, "wb") as out:
                     for idx, line in enumerate(fobj):
                         counts["review_lines_seen"] += 1
+                        if counts["review_lines_seen"] % 1_000_000 == 0:
+                            print(f"     ... {counts['review_lines_seen']:,} review lines streamed")
                         if idx % sample_step != 0 or counts["review_rows_kept"] >= max_reviews:
                             continue
                         if not line.strip():
@@ -241,8 +243,6 @@ def stream_extract_official_yelp_dataset(
                             continue  # malformed line: skip, it would be dropped by the ETL anyway
                         out.write(line if line.endswith(b"\n") else line + b"\n")
                         counts["review_rows_kept"] += 1
-                        if counts["review_lines_seen"] % 1_000_000 == 0:
-                            print(f"     ... {counts['review_lines_seen']:,} review lines streamed")
                 review_done = True
                 print(f"     kept {counts['review_rows_kept']:,} of {counts['review_lines_seen']:,} reviews "
                       f"(every {sample_step}th line), {len(review_user_ids):,} distinct users")

@@ -50,6 +50,18 @@ def load_json_artifact(path_str: str) -> dict:
 
 
 @st.cache_data
+def run_sql_query(query: str) -> pd.DataFrame:
+    """Run one SQL query; the result is cached so filter changes do not re-run it."""
+    conn = sqlite3.connect(str(SQLITE_DB_PATH))
+    try:
+        conn.execute("PRAGMA temp_store = MEMORY;")
+        conn.execute("PRAGMA cache_size = -64000;")
+        return pd.read_sql_query(query, conn)
+    finally:
+        conn.close()
+
+
+@st.cache_data
 def load_filtered_aggregates(year_min: int, year_max: int, selected_cities: list, selected_cats: list, elite_filter: str):
     """Filter the cleaned reviews with a Polars LazyFrame (predicate + projection pushdown)."""
     lf_rev = pl.scan_parquet(PARQUET_REVIEWS_SINGLE).filter(
@@ -130,8 +142,8 @@ def main():
     years = pl.scan_parquet(PARQUET_REVIEWS_SINGLE).select(pl.col("year").min().alias("lo"), pl.col("year").max().alias("hi")).collect().row(0)
     y_lo, y_hi = int(years[0]), int(years[1])
     year_range = st.sidebar.slider("Select Review Year Range", min_value=y_lo, max_value=y_hi, value=(max(y_lo, 2010), y_hi))
-    selected_cities = st.sidebar.multiselect("Filter by City (Top 20)", options=top_cities, default=top_cities[:10])
-    selected_cats = st.sidebar.multiselect("Filter by Primary Category", options=top_cats, default=top_cats[:10])
+    selected_cities = st.sidebar.multiselect("Filter by City (Top 20, empty = all cities)", options=top_cities, default=top_cities[:10])
+    selected_cats = st.sidebar.multiselect("Filter by Primary Category (empty = all categories)", options=top_cats, default=top_cats[:10])
     elite_filter = st.sidebar.radio("User Tier Filter", options=["All Users", "Elite Only", "Regular Only"], help="Elite = user had Yelp Elite status in at least one year", index=0)
 
     kpi_df, by_city_cat, by_year_tier, star_dist = load_filtered_aggregates(
@@ -241,11 +253,7 @@ def main():
         selected_q = st.selectbox("Select an Analytical SQL Query to Execute Live:", list(SQL_QUERIES.keys()))
         st.code(SQL_QUERIES[selected_q], language="sql")
         if SQLITE_DB_PATH.exists():
-            conn = sqlite3.connect(str(SQLITE_DB_PATH))
-            conn.execute("PRAGMA temp_store = MEMORY;")
-            conn.execute("PRAGMA cache_size = -64000;")
-            df_q = pd.read_sql_query(SQL_QUERIES[selected_q], conn)
-            conn.close()
+            df_q = run_sql_query(SQL_QUERIES[selected_q])
             st.dataframe(df_q, width="stretch")
 
     # TAB 4: Hypotheses

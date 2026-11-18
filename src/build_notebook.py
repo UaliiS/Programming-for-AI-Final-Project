@@ -42,8 +42,7 @@ def build_cells():
              "from IPython.display import Image, display, Markdown\n"
              "pd.set_option('display.max_colwidth', 120)\n"
              "from src.config import *\n"
-             "load = lambda p: json.loads(Path(p).read_text(encoding='utf-8'))\n"
-             "print('Project root:', BASE_DIR)"),
+             "load = lambda p: json.loads(Path(p).read_text(encoding='utf-8'))"),
 
         md("## 1. Data: streamed download, sampling and data-quality audit"),
         code("manifest = load(RAW_MANIFEST_JSON)\n"

@@ -17,8 +17,8 @@ comparison uses a TF-IDF baseline and leakage-free chronological splits.
 Requires Python 3.11+ (developed with 3.12) and about 3 GB of free disk space.
 
 ```bash
-git clone <this-repository-url> yelp-reviews-at-scale
-cd yelp-reviews-at-scale
+git clone https://github.com/UaliiS/Programming-for-AI-Final-Project.git
+cd Programming-for-AI-Final-Project
 python3 -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -32,9 +32,16 @@ python -m src.build_notebook         # rebuild and execute the analysis notebook
 **Run time.** Expect 30–60 minutes for the first `--auto` run. Most of it is stage 1, which streams
 the ~4.3 GB archive from Yelp once. Later runs reuse `data/raw/` and skip the download.
 
-**Offline or manual download.** You can download `Yelp-JSON.zip` (or `yelp_dataset.tar`) yourself
+**Offline or manual download.** The archive is streamed over one HTTP connection, so on a slow or
+unstable network the stream can break off (`tarfile.ReadError: unexpected end of data`). In that case
+download `Yelp-JSON.zip` (or `yelp_dataset.tar`) yourself, for example with
+`curl -C - -O https://business.yelp.com/external-assets/files/Yelp-JSON.zip` (it can resume),
 and point the pipeline at it:
-`YELP_ARCHIVE=/path/to/Yelp-JSON.zip python main.py --auto`.
+
+```bash
+YELP_ARCHIVE=/path/to/Yelp-JSON.zip python main.py --auto        # macOS / Linux
+$env:YELP_ARCHIVE="C:\path\to\Yelp-JSON.zip"; python main.py --auto   # Windows PowerShell
+```
 
 The raw data, Parquet files, database and trained model are not committed to Git because of their
 size (see `.gitignore`). They are rebuilt by `python main.py --auto`. The small result files in
