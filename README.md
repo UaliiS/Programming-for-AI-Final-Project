@@ -104,7 +104,7 @@ src/ml_models.py            text models and evaluation
 src/build_notebook.py       builds/executes the notebook
 Yelp_Reviews_At_Scale_Analysis.ipynb
 outputs/                    JSON results, SQL result CSVs, figures, aggregates
-docs/                       written report (.docx) and presentation (.pptx)
+docs/                       written report (.docx, .pdf) and presentation (.pdf)
 ```
 
 ## How the course requirements are met
@@ -133,4 +133,5 @@ docs/                       written report (.docx) and presentation (.pptx)
 
 ## Results
 
-See `docs/FINAL_PROJECT_REPORT.docx` and the files in `outputs/`.
+See the report `docs/Sembay_Aldiyev_AAI-2605_Report.pdf`, the presentation
+`docs/Sembay_Aldiyev_AAI-2605_Presentation.pdf` and the files in `outputs/`.

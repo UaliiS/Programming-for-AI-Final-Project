@@ -112,7 +112,7 @@ def build_cells():
              "          'It was fine. Nothing special, prices a bit high for what you get.']:\n"
              "    r = predict_custom_review(t)\n"
              "    print(r['predicted_stars'], '★ |', t)"),
-        md("## 6. Conclusions\nSee the written report (`docs/FINAL_PROJECT_REPORT.docx`) for the discussion, limitations and references."),
+        md("## 6. Conclusions\nSee the written report (`docs/Sembay_Aldiyev_AAI-2605_Report.pdf`) for the discussion, limitations and references."),
     ]
 
 
