@@ -1,0 +1,23 @@
+{
+  "built_at": "2026-11-17T18:28:18",
+  "sample": "random sample of 50,000 of 776,476 cleaned reviews (seed 42)",
+  "reviews": 50000,
+  "businesses": 29735,
+  "users": 44923,
+  "full_reviews": 776476,
+  "db_row_counts": {
+    "businesses": 29735,
+    "categories": 60,
+    "business_categories": 98483,
+    "users": 44923,
+    "reviews": 50000,
+    "agg_city_category_year": 9434
+  },
+  "sizes_mb": {
+    "business.parquet": 2.0,
+    "reviews_sample.parquet": 14.7,
+    "user.parquet": 1.8,
+    "yelp_star_predictor.joblib": 2.4
+  },
+  "db_note": "yelp_demo.db is not committed; the dashboard builds it on first start"
+}

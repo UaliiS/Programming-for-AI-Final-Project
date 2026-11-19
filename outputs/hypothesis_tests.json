@@ -1,34 +1,8 @@
 {
-  "H1_elite_bias": {
-    "title": "H1: Elite reviewers rate differently from never-elite users",
-    "null_hypothesis": "Reviews written by Elite users (in their elite years) and by never-elite users have the same mean and variance of stars.",
-    "test": "Welch t-test (means), Levene (variances), Mann-Whitney U on per-user means (robustness)",
-    "n_elite_reviews": 150891,
-    "n_never_elite_reviews": 584187,
-    "elite_mean_stars": 3.9837,
-    "never_elite_mean_stars": 3.6784,
-    "elite_std_stars": 1.0478,
-    "never_elite_std_stars": 1.5804,
-    "elite_pct_1_star": 3.33,
-    "never_elite_pct_1_star": 18.98,
-    "elite_pct_5_star": 37.75,
-    "never_elite_pct_5_star": 48.9,
-    "welch_t": 89.817,
-    "welch_p": 0.0,
-    "levene_W": 40402.577,
-    "levene_p": 0.0,
-    "cohens_d": 0.2053,
-    "effect_size": "small",
-    "per_user_mann_whitney_p": 0.5448977806445638,
-    "n_users_elite": 35995,
-    "n_users_never": 418176,
-    "decision": "Reject H0",
-    "conclusion": "Elite reviews average 3.98 stars vs 3.68 for never-elite users (higher; Welch p < 1e-300; Cohen's d = 0.21, a small effect). Elite ratings are less spread out (SD 1.05 vs 1.58; Levene p < 1e-300): 3.33% are 1-star vs 18.98%, and 37.75% are 5-star vs 48.9%. The per-user test (one mean per user, p = 0.545) disagrees, so the review-level result should be read with care."
-  },
-  "H2_city_category": {
-    "title": "H2: Average ratings differ between cities and between categories",
+  "H1_city_category": {
+    "title": "H1: Average ratings differ between cities and between categories",
     "null_hypothesis": "Mean review stars are equal across the 10 largest cities (and across the 12 largest categories).",
-    "test": "One-way ANOVA + Kruskal-Wallis; effect size eta squared",
+    "test": "One-way ANOVA + Kruskal\u2013Wallis; effect size \u03b7\u00b2",
     "cities_tested": [
       "Philadelphia",
       "New Orleans",
@@ -76,12 +50,38 @@
       "Event Planning & Services": 3.3311
     },
     "decision": "Reject H0",
-    "conclusion": "Among the 10 largest cities, Santa Barbara has the highest mean (4.01) and Tucson the lowest (3.71). The difference is statistically significant (ANOVA p < 1e-300, Kruskal-Wallis p < 1e-300); city explains 0.35% of rating variance. Category explains more (0.91% of variance): Active Life is rated highest (4.01) and Event Planning & Services lowest (3.33)."
+    "conclusion": "Among the 10 largest cities, Santa Barbara has the highest mean (4.01) and Tucson the lowest (3.71). The difference is statistically significant (ANOVA p < 1e-300, Kruskal\u2013Wallis p < 1e-300); city explains 0.35% of rating variance. Category explains more (0.91% of variance): Active Life is rated highest (4.01) and Event Planning & Services lowest (3.33)."
+  },
+  "H2_elite_bias": {
+    "title": "H2: Elite reviewers rate differently from never-Elite users",
+    "null_hypothesis": "Reviews written by Elite users (in their Elite years) and by never-Elite users have the same mean and variance of stars.",
+    "test": "Welch t-test (means), Levene (variances), Mann\u2013Whitney U on per-user means (robustness)",
+    "n_elite_reviews": 150891,
+    "n_never_elite_reviews": 584187,
+    "elite_mean_stars": 3.9837,
+    "never_elite_mean_stars": 3.6784,
+    "elite_std_stars": 1.0478,
+    "never_elite_std_stars": 1.5804,
+    "elite_pct_1_star": 3.33,
+    "never_elite_pct_1_star": 18.98,
+    "elite_pct_5_star": 37.75,
+    "never_elite_pct_5_star": 48.9,
+    "welch_t": 89.817,
+    "welch_p": 0.0,
+    "levene_W": 40402.577,
+    "levene_p": 0.0,
+    "cohens_d": 0.2053,
+    "effect_size": "small",
+    "per_user_mann_whitney_p": 0.5448977806445638,
+    "n_users_elite": 35995,
+    "n_users_never": 418176,
+    "decision": "Reject H0",
+    "conclusion": "Elite reviews average 3.98 stars vs 3.68 for never-Elite users (higher; Welch p < 1e-300; Cohen\u2019s d = 0.21, a small effect). Elite ratings are less spread out (SD 1.05 vs 1.58; Levene p < 1e-300): 3.33% are 1-star vs 18.98%, and 37.75% are 5-star vs 48.9%. The per-user test (one mean per user, p = 0.545) disagrees, so the review-level result should be read with care."
   },
   "H3_length_usefulness": {
-    "title": "H3: Longer reviews receive more 'useful' votes",
+    "title": "H3: Longer reviews receive more \u201cuseful\u201d votes",
     "null_hypothesis": "There is no monotonic association between review length and useful votes.",
-    "test": "Spearman rank correlation; Mann-Whitney U (elite vs never-elite length)",
+    "test": "Spearman rank correlation; Mann\u2013Whitney U (Elite vs never-Elite length)",
     "spearman_rho_length_useful": 0.3396,
     "spearman_p": 0.0,
     "spearman_rho_stars_length": -0.2181,
@@ -90,6 +90,6 @@
     "never_elite_median_length": 349.0,
     "mann_whitney_p_length": 0.0,
     "decision": "Reject H0",
-    "conclusion": "Review length and useful votes have a moderate positive rank correlation (Spearman rho = 0.34, p < 1e-300). Elite reviews are longer than never-elite ones (median 664 vs 349 characters; one-sided Mann-Whitney p < 1e-300). Lower-star reviews tend to be longer: complaints are written in more detail (rho stars~length = -0.22)."
+    "conclusion": "Review length and useful votes have a moderate positive rank correlation (Spearman \u03c1 = 0.34, p < 1e-300). Elite reviews are longer than never-Elite ones (median 664 vs 349 characters; one-sided Mann\u2013Whitney p < 1e-300). Lower-star reviews tend to be longer: complaints are written in more detail (Spearman \u03c1 between stars and length = \u22120.22)."
   }
 }

@@ -8,3 +8,4 @@ data/parquet/
 data/db/
 models/*.joblib
 docs/~$*
+data/demo/*.db

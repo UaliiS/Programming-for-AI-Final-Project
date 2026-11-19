@@ -109,7 +109,7 @@ CREATE INDEX IF NOT EXISTS idx_usr_elite ON users(is_elite);
 """
 
 
-def build_sqlite_database(db_path: Path = SQLITE_DB_PATH) -> Dict[str, object]:
+def build_sqlite_database(db_path: Path = SQLITE_DB_PATH, write_summary: bool = True) -> Dict[str, object]:
     """
     Populate the normalized SQLite database from the cleaned Parquet files.
     Returns row counts for each relational table.
@@ -189,8 +189,9 @@ def build_sqlite_database(db_path: Path = SQLITE_DB_PATH) -> Dict[str, object]:
         conn.executescript(INDEX_DDL)
         agg = pd.read_sql_query(AGG_CITY_CATEGORY_SQL, conn)
         agg.to_sql("agg_city_category_year", conn, if_exists="replace", index=False)
-        AGGREGATES_DIR.mkdir(parents=True, exist_ok=True)
-        agg.to_parquet(AGGREGATES_DIR / "city_category_year.parquet", index=False)
+        if write_summary:
+            AGGREGATES_DIR.mkdir(parents=True, exist_ok=True)
+            agg.to_parquet(AGGREGATES_DIR / "city_category_year.parquet", index=False)
 
         conn.commit()
 
@@ -208,8 +209,9 @@ def build_sqlite_database(db_path: Path = SQLITE_DB_PATH) -> Dict[str, object]:
     finally:
         conn.close()
     summary["db_size_mb"] = round(db_path.stat().st_size / 2**20, 1)
-    with open(DB_SUMMARY_JSON, "w", encoding="utf-8") as f:
-        json.dump(summary, f, indent=2)
+    if write_summary:
+        with open(DB_SUMMARY_JSON, "w", encoding="utf-8") as f:
+            json.dump(summary, f, indent=2)
     return summary
 
 

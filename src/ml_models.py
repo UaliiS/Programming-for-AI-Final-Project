@@ -198,13 +198,14 @@ def train_and_evaluate_models(n_train: int = 120_000, n_val: int = 20_000, n_tes
     return summary
 
 
-def predict_custom_review(review_text: str) -> Dict[str, Any]:
+def predict_custom_review(review_text: str, model_path=None) -> Dict[str, Any]:
     """Predict the star rating of a user-typed review with the saved best model."""
+    model_path = model_path or BEST_MODEL_PATH
     if not review_text or not str(review_text).strip():
         raise ValueError("Review text cannot be empty.")
-    if not BEST_MODEL_PATH.exists():
-        raise FileNotFoundError(f"Trained model not found at {BEST_MODEL_PATH}. Run the model training stage first.")
-    pipe = joblib.load(BEST_MODEL_PATH)
+    if not model_path.exists():
+        raise FileNotFoundError(f"Trained model not found at {model_path}. Run the model training stage first.")
+    pipe = joblib.load(model_path)
     text = str(review_text).strip()
     pred = int(pipe.predict([text])[0])
     probs: Dict[str, float] = {}

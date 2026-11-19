@@ -60,6 +60,11 @@ def load_analysis_frame() -> pd.DataFrame:
     return df
 
 
+def signed(x: float, digits: int = 2) -> str:
+    """Format a number with a typographic minus sign (−0.22)."""
+    return f"{x:.{digits}f}".replace("-", "−")
+
+
 def fmt_p(p: float) -> str:
     """Readable p-value (scipy returns 0.0 when p is below double precision)."""
     return "< 1e-300" if p == 0 else (f"= {p:.3g}" if p >= 1e-4 else f"= {p:.1e}")
@@ -130,7 +135,7 @@ def run_statistical_hypotheses(df: pd.DataFrame = None) -> Dict[str, Any]:
         df = load_analysis_frame()
     describe_dataset(df)
 
-    # ---------------- H1: elite reviews vs never-elite reviews ----------------
+    # ---------------- H2: Elite reviews vs never-Elite reviews ----------------
     e = df.loc[df["tier"] == TIER_ELITE, "stars"].to_numpy(dtype=float)
     n = df.loc[df["tier"] == TIER_NEVER, "stars"].to_numpy(dtype=float)
     t_stat, p_t = stats.ttest_ind(e, n, equal_var=False)
@@ -144,9 +149,9 @@ def run_statistical_hypotheses(df: pd.DataFrame = None) -> Dict[str, Any]:
     u_stat, p_u = stats.mannwhitneyu(ue, un, alternative="two-sided")
     higher = "higher" if e.mean() > n.mean() else "lower"
     h1 = {
-        "title": "H1: Elite reviewers rate differently from never-elite users",
-        "null_hypothesis": "Reviews written by Elite users (in their elite years) and by never-elite users have the same mean and variance of stars.",
-        "test": "Welch t-test (means), Levene (variances), Mann-Whitney U on per-user means (robustness)",
+        "title": "H2: Elite reviewers rate differently from never-Elite users",
+        "null_hypothesis": "Reviews written by Elite users (in their Elite years) and by never-Elite users have the same mean and variance of stars.",
+        "test": "Welch t-test (means), Levene (variances), Mann–Whitney U on per-user means (robustness)",
         "n_elite_reviews": int(len(e)), "n_never_elite_reviews": int(len(n)),
         "elite_mean_stars": round(float(e.mean()), 4), "never_elite_mean_stars": round(float(n.mean()), 4),
         "elite_std_stars": round(float(e.std(ddof=1)), 4), "never_elite_std_stars": round(float(n.std(ddof=1)), 4),
@@ -166,14 +171,14 @@ def run_statistical_hypotheses(df: pd.DataFrame = None) -> Dict[str, Any]:
     else:
         robust = "disagrees, so the review-level result should be read with care"
     h1["conclusion"] = (
-        f"Elite reviews average {h1['elite_mean_stars']:.2f} stars vs {h1['never_elite_mean_stars']:.2f} for never-elite users "
-        f"({higher}; Welch p {fmt_p(p_t)}; Cohen's d = {d:.2f}, a {effect_label(d)} effect). Elite ratings are {spread} spread out "
+        f"Elite reviews average {h1['elite_mean_stars']:.2f} stars vs {h1['never_elite_mean_stars']:.2f} for never-Elite users "
+        f"({higher}; Welch p {fmt_p(p_t)}; Cohen’s d = {d:.2f}, a {effect_label(d)} effect). Elite ratings are {spread} spread out "
         f"(SD {h1['elite_std_stars']:.2f} vs {h1['never_elite_std_stars']:.2f}; Levene p {fmt_p(p_lev)}): {h1['elite_pct_1_star']}% are 1-star vs "
         f"{h1['never_elite_pct_1_star']}%, and {h1['elite_pct_5_star']}% are 5-star vs {h1['never_elite_pct_5_star']}%. "
         f"The per-user test (one mean per user, p {fmt_p(p_u)}) {robust}."
     )
 
-    # ---------------- H2: city heterogeneity ----------------
+    # ---------------- H1: city and category heterogeneity ----------------
     top_cities = df["city"].value_counts().head(10).index.tolist()
     sub = df[df["city"].isin(top_cities)]
     groups = [g["stars"].to_numpy(dtype=float) for _, g in sub.groupby("city")]
@@ -193,9 +198,9 @@ def run_statistical_hypotheses(df: pd.DataFrame = None) -> Dict[str, Any]:
     eta2_cat = sum(len(g) * (g.mean() - grand_c) ** 2 for g in cgroups) / float(((sub_c["stars"] - grand_c) ** 2).sum())
     cat_means = sub_c.groupby("primary_category")["stars"].mean().sort_values(ascending=False)
     h2 = {
-        "title": "H2: Average ratings differ between cities and between categories",
+        "title": "H1: Average ratings differ between cities and between categories",
         "null_hypothesis": "Mean review stars are equal across the 10 largest cities (and across the 12 largest categories).",
-        "test": "One-way ANOVA + Kruskal-Wallis; effect size eta squared",
+        "test": "One-way ANOVA + Kruskal–Wallis; effect size η²",
         "cities_tested": top_cities,
         "city_anova_F": round(float(f_city), 3), "city_anova_p": float(p_city),
         "city_kruskal_H": round(float(h_city), 3), "city_kruskal_p": float(p_kw),
@@ -210,7 +215,7 @@ def run_statistical_hypotheses(df: pd.DataFrame = None) -> Dict[str, Any]:
         f"Among the 10 largest cities, {city_means.index[0]} has the highest mean ({city_means['mean'].iloc[0]:.2f}) and "
         f"{city_means.index[-1]} the lowest ({city_means['mean'].iloc[-1]:.2f}). The difference is "
         f"{'statistically significant' if p_city < ALPHA else 'not statistically significant'} "
-        f"(ANOVA p {fmt_p(p_city)}, Kruskal-Wallis p {fmt_p(p_kw)}); city explains {100 * eta2_city:.2f}% of rating variance. "
+        f"(ANOVA p {fmt_p(p_city)}, Kruskal–Wallis p {fmt_p(p_kw)}); city explains {100 * eta2_city:.2f}% of rating variance. "
         f"Category {'explains more' if eta2_cat > eta2_city else 'explains less'} ({100 * eta2_cat:.2f}% of variance): {cat_means.index[0]} is rated highest "
         f"({cat_means.iloc[0]:.2f}) and {cat_means.index[-1]} lowest ({cat_means.iloc[-1]:.2f})."
     )
@@ -222,9 +227,9 @@ def run_statistical_hypotheses(df: pd.DataFrame = None) -> Dict[str, Any]:
     u_len, p_len = stats.mannwhitneyu(le, ln, alternative="greater")
     rho_star_len, p_sl = stats.spearmanr(df["stars"], df["text_length"])
     h3 = {
-        "title": "H3: Longer reviews receive more 'useful' votes",
+        "title": "H3: Longer reviews receive more “useful” votes",
         "null_hypothesis": "There is no monotonic association between review length and useful votes.",
-        "test": "Spearman rank correlation; Mann-Whitney U (elite vs never-elite length)",
+        "test": "Spearman rank correlation; Mann–Whitney U (Elite vs never-Elite length)",
         "spearman_rho_length_useful": round(float(rho), 4), "spearman_p": float(p_rho),
         "spearman_rho_stars_length": round(float(rho_star_len), 4), "spearman_p_stars_length": float(p_sl),
         "elite_median_length": float(np.median(le)), "never_elite_median_length": float(np.median(ln)),
@@ -237,12 +242,13 @@ def run_statistical_hypotheses(df: pd.DataFrame = None) -> Dict[str, Any]:
     star_note = ("Lower-star reviews tend to be longer: complaints are written in more detail"
                  if rho_star_len < 0 else "Higher-star reviews tend to be longer")
     h3["conclusion"] = (
-        f"Review length and useful votes have a {strength} {direction} rank correlation (Spearman rho = {rho:.2f}, p {fmt_p(p_rho)}). "
-        f"Elite reviews are {longer} than never-elite ones (median {np.median(le):.0f} vs {np.median(ln):.0f} characters; "
-        f"one-sided Mann-Whitney p {fmt_p(p_len)}). {star_note} (rho stars~length = {rho_star_len:.2f})."
+        f"Review length and useful votes have a {strength} {direction} rank correlation (Spearman ρ = {rho:.2f}, p {fmt_p(p_rho)}). "
+        f"Elite reviews are {longer} than never-Elite ones (median {np.median(le):.0f} vs {np.median(ln):.0f} characters; "
+        f"one-sided Mann–Whitney p {fmt_p(p_len)}). {star_note} (Spearman ρ between stars and length = {signed(rho_star_len)})."
     )
 
-    out = {"H1_elite_bias": h1, "H2_city_category": h2, "H3_length_usefulness": h3}
+    # Numbered in the order of the research questions: RQ1 cities/categories, RQ2 Elite, RQ3 length.
+    out = {"H1_city_category": h2, "H2_elite_bias": h1, "H3_length_usefulness": h3}
     out = _json_safe(out)
     with open(HYPOTHESIS_RESULTS_JSON, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=2)
@@ -319,10 +325,12 @@ def generate_all_visualizations(df: pd.DataFrame = None) -> Dict[str, str]:
     yc = (df[df["city"].isin(top5) & (df["year"] <= 2021)]
           .groupby(["year", "city"]).agg(reviews=("stars", "size"), mean_stars=("stars", "mean")).reset_index())
     fig, axes = plt.subplots(1, 2, figsize=(14, 5), dpi=150)
-    sns.lineplot(data=yc, x="year", y="reviews", hue="city", marker="o", ax=axes[0])
+    city_colors = dict(zip(top5, sns.color_palette("deep", len(top5))))  # same colour per city in both panels
+    sns.lineplot(data=yc, x="year", y="reviews", hue="city", hue_order=top5, palette=city_colors, marker="o", ax=axes[0])
     axes[0].set_title("Reviews per year (sample), 5 largest cities", fontweight="bold")
     axes[0].set_xlabel("Year"); axes[0].set_ylabel("Reviews in sample")
-    sns.lineplot(data=yc[yc["reviews"] >= 100], x="year", y="mean_stars", hue="city", marker="o", ax=axes[1], legend=False)
+    sns.lineplot(data=yc[yc["reviews"] >= 100], x="year", y="mean_stars", hue="city", hue_order=top5,
+                 palette=city_colors, marker="o", ax=axes[1], legend=False)
     axes[1].set_title("Mean stars per year (years with ≥100 reviews)", fontweight="bold")
     axes[1].set_xlabel("Year"); axes[1].set_ylabel("Mean stars")
     fig.tight_layout()

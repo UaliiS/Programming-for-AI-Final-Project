@@ -50,6 +50,16 @@ DB_SUMMARY_JSON: Path = OUTPUTS_DIR / "database_summary.json"
 ER_DIAGRAM_PNG: Path = PLOTS_DIR / "er_diagram.png"
 BEST_MODEL_PATH: Path = MODELS_DIR / "yelp_star_predictor.joblib"
 
+# Small demo dataset committed to the repository (built by src/build_demo_data.py).
+# The dashboard falls back to it when the full pipeline has not been run.
+DEMO_DIR: Path = DATA_DIR / "demo"
+DEMO_REVIEWS: Path = DEMO_DIR / "reviews_sample.parquet"
+DEMO_BUSINESS: Path = DEMO_DIR / "business.parquet"
+DEMO_USER: Path = DEMO_DIR / "user.parquet"
+DEMO_DB_PATH: Path = DEMO_DIR / "yelp_demo.db"
+DEMO_MODEL_PATH: Path = DEMO_DIR / "yelp_star_predictor.joblib"
+DEMO_INFO_JSON: Path = DEMO_DIR / "demo_info.json"
+
 # ---------------------------------------------------------------------------
 # Extraction settings
 # ---------------------------------------------------------------------------

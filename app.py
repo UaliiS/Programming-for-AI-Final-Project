@@ -26,15 +26,40 @@ from src.config import (
     BENCHMARK_RESULTS_JSON,
     HYPOTHESIS_RESULTS_JSON,
     MODEL_METRICS_JSON,
+    BEST_MODEL_PATH,
+    DEMO_BUSINESS,
+    DEMO_DB_PATH,
+    DEMO_INFO_JSON,
+    DEMO_MODEL_PATH,
+    DEMO_REVIEWS,
+    DEMO_USER,
     PARQUET_BUSINESS,
     PARQUET_REVIEWS_SINGLE,
     PARQUET_USER,
     ER_DIAGRAM_PNG,
     PROJECT_METADATA,
+    SQL_RESULTS_DIR,
     SQLITE_DB_PATH,
 )
 from src.database import SQL_QUERIES
 from src.ml_models import predict_custom_review
+
+# Use the full pipeline output when it exists; otherwise the small demo sample in data/demo/.
+DEMO_MODE = not PARQUET_REVIEWS_SINGLE.exists() and DEMO_REVIEWS.exists()
+if DEMO_MODE:
+    PARQUET_REVIEWS_SINGLE, PARQUET_BUSINESS, PARQUET_USER = DEMO_REVIEWS, DEMO_BUSINESS, DEMO_USER
+    SQLITE_DB_PATH, MODEL_PATH = DEMO_DB_PATH, DEMO_MODEL_PATH
+else:
+    MODEL_PATH = BEST_MODEL_PATH if BEST_MODEL_PATH.exists() else DEMO_MODEL_PATH
+
+
+@st.cache_resource(show_spinner="Building the demo SQLite database (first start only)…")
+def ensure_demo_database() -> bool:
+    """The demo .db is not committed; build it from the demo Parquet files on first start."""
+    if not DEMO_DB_PATH.exists():
+        from src.build_demo_data import build_demo_database
+        build_demo_database()
+    return True
 
 st.set_page_config(
     page_title="Yelp Reviews at Scale — Topic #44 Dashboard",
@@ -129,6 +154,15 @@ def main():
         f"**Authors:** {', '.join(PROJECT_METADATA['authors'])} ({PROJECT_METADATA['group']})"
     )
 
+    if DEMO_MODE:
+        ensure_demo_database()
+        info = load_json_artifact(str(DEMO_INFO_JSON)) if DEMO_INFO_JSON.exists() else {}
+        st.info(
+            f"**Demo mode.** The charts and SQL queries use a {info.get('reviews', 50000):,}-review random sample "
+            f"of the {info.get('full_reviews', 776476):,} cleaned reviews, so the dashboard runs without the 4.3 GB download. "
+            "The benchmark, hypothesis and model results in the tabs come from the full run. "
+            "To rebuild everything locally: `python main.py --auto`."
+        )
     if not PARQUET_REVIEWS_SINGLE.exists():
         st.error("Cleaned Parquet files not found! Please run `python main.py --auto` first.")
         return
@@ -252,6 +286,12 @@ def main():
                 st.image(str(ER_DIAGRAM_PNG))
         selected_q = st.selectbox("Select an Analytical SQL Query to Execute Live:", list(SQL_QUERIES.keys()))
         st.code(SQL_QUERIES[selected_q], language="sql")
+        saved_csv = SQL_RESULTS_DIR / f"{selected_q}.csv"
+        if DEMO_MODE and saved_csv.exists():
+            st.markdown("**Result on the full database** (776,476 reviews, saved by the pipeline):")
+            st.dataframe(pd.read_csv(saved_csv), width="stretch")
+            st.markdown("**Same query run live on the demo database** (sample; thresholds such as "
+                        "`HAVING COUNT(*) >= 5000` may leave few or no rows):")
         if SQLITE_DB_PATH.exists():
             df_q = run_sql_query(SQL_QUERIES[selected_q])
             st.dataframe(df_q, width="stretch")
@@ -285,7 +325,7 @@ def main():
         )
         if st.button("Predict Star Rating"):
             try:
-                pred_res = predict_custom_review(sample_input)
+                pred_res = predict_custom_review(sample_input, MODEL_PATH)
                 st.success(
                     f"**Predicted Star Rating:** {'⭐' * pred_res['predicted_stars']} "
                     f"({pred_res['predicted_stars']} / 5 Stars) — **{pred_res['sentiment_category']}**"
